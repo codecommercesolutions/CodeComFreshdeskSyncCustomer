@@ -1,0 +1,43 @@
+{
+    "name": "codecom/freshdesk-sync-customer",
+    "description": "Freshdesk Customer Sync Integration",
+    "version": "1.0.0",
+    "type": "shopware-platform-plugin",
+    "license": "proprietary",
+    "authors": [
+        {
+            "name": "CodeCommerce Solutions",
+            "homepage": "https://www.codecommercesolutions.com"
+        }
+    ],
+    "require": {
+        "shopware/core": "~6.6.0 || ~6.7.0@dev",
+        "shopware/storefront": "~6.6.0 || ~6.7.0@dev"
+    },
+    "extra": {
+        "shopware-plugin-class": "CodeCom\\FreshdeskSyncCustomer\\CodeComFreshdeskSyncCustomer",
+        "plugin-icon": "src/Resources/config/plugin.png",
+        "copyright": "(c) by CodeCommerce Solutions",
+        "label": {
+            "de-DE": "Kundendaten mit Freshdesk synchronisieren",
+            "en-GB": "Syncing customer data to Freshdesk"
+        },
+        "description": {
+            "de-DE": "Synchronisiert Kunden bei der Registrierung mit Freshdesk.",
+            "en-GB": "Synchronizes customers with Freshdesk on registration."
+        },
+        "manufacturerLink": {
+            "de-DE": "https://www.codecommercesolutions.com",
+            "en-GB": "https://www.codecommercesolutions.com"
+        },
+        "supportLink": {
+            "de-DE": "https://www.codecommercesolutions.com/contact/",
+            "en-GB": "https://www.codecommercesolutions.com/contact/"
+        }
+    },
+    "autoload": {
+        "psr-4": {
+            "CodeCom\\FreshdeskSyncCustomer\\": "src/"
+        }
+    }
+}

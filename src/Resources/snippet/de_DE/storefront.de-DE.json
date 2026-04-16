@@ -1,0 +1,7 @@
+{
+  "freshdesk": {
+    "registration": {
+      "syncConsentLabel": "Ich stimme zu, dass meine Daten mit Freshdesk synchronisiert werden."
+    }
+  }
+}

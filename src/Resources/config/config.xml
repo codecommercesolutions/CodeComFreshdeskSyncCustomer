@@ -1,0 +1,219 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<config xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:noNamespaceSchemaLocation="https://raw.githubusercontent.com/shopware/shopware/trunk/src/Core/System/SystemConfig/Schema/config.xsd">
+
+    <card>
+        <title>API Connection</title>
+        <title lang="de-DE">API Verbindung</title>
+
+        <input-field type="bool">
+            <name>enabled</name>
+            <label>Enable Freshdesk Integration</label>
+            <label lang="de-DE">Freshdesk Integration aktivieren</label>
+            <defaultValue>false</defaultValue>
+        </input-field>
+
+        <input-field type="text">
+            <name>apiUrl</name>
+            <label>Freshdesk API URL</label>
+            <label lang="de-DE">Freshdesk API URL</label>
+            <placeholder>https://yourdomain.freshdesk.com</placeholder>
+            <helpText>Base URL without /api/v2</helpText>
+        </input-field>
+
+        <input-field type="text">
+            <name>apiKey</name>
+            <label>API Key</label>
+            <label lang="de-DE">API Schlüssel</label>
+        </input-field>
+    </card>
+
+    <card>
+        <title>User Registration</title>
+        <title lang="de-DE">Benutzerregistrierung</title>
+
+        <input-field type="text">
+            <name>contactTag</name>
+            <label>Contact Tag</label>
+            <label lang="de-DE">Kontakt-Tag</label>
+            <helpText>Tag assigned to the contact in Freshdesk. Default is Webshop.</helpText>
+            <helpText lang="de-DE">Tag, das dem Kontakt in Freshdesk zugewiesen wird. Standard ist Webshop.</helpText>
+            <defaultValue>Webshop</defaultValue>
+        </input-field>
+
+        <input-field type="single-select">
+            <name>contactLanguage</name>
+            <label>Contact Language</label>
+            <label lang="de-DE">Kontakt-Sprache</label>
+            <helpText>Language of the contact in Freshdesk. Default is en.</helpText>
+            <helpText lang="de-DE">Sprache des Kontakts in Freshdesk. Standard ist en.</helpText>
+            <defaultValue>en</defaultValue>
+            <options>
+                <option>
+                    <id>ar</id>
+                    <name>Arabic</name>
+                </option>
+                <option>
+                    <id>ca</id>
+                    <name>Catalan</name>
+                </option>
+                <option>
+                    <id>cs</id>
+                    <name>Czech</name>
+                </option>
+                <option>
+                    <id>cy-GB</id>
+                    <name>Welsh</name>
+                </option>
+                <option>
+                    <id>da</id>
+                    <name>Danish</name>
+                </option>
+                <option>
+                    <id>de</id>
+                    <name>German</name>
+                </option>
+                <option>
+                    <id>en</id>
+                    <name>English</name>
+                </option>
+                <option>
+                    <id>es</id>
+                    <name>Spanish</name>
+                </option>
+                <option>
+                    <id>es-LA</id>
+                    <name>Spanish (Latin America)</name>
+                </option>
+                <option>
+                    <id>et</id>
+                    <name>Estonian</name>
+                </option>
+                <option>
+                    <id>fi</id>
+                    <name>Finnish</name>
+                </option>
+                <option>
+                    <id>fr</id>
+                    <name>French</name>
+                </option>
+                <option>
+                    <id>he</id>
+                    <name>Hebrew</name>
+                </option>
+                <option>
+                    <id>hr</id>
+                    <name>Croatian</name>
+                </option>
+                <option>
+                    <id>hu</id>
+                    <name>Hungarian</name>
+                </option>
+                <option>
+                    <id>id</id>
+                    <name>Indonesian</name>
+                </option>
+                <option>
+                    <id>it</id>
+                    <name>Italian</name>
+                </option>
+                <option>
+                    <id>ja-JP</id>
+                    <name>Japanese</name>
+                </option>
+                <option>
+                    <id>ko</id>
+                    <name>Korean</name>
+                </option>
+                <option>
+                    <id>lv-LV</id>
+                    <name>Latvian</name>
+                </option>
+                <option>
+                    <id>nb-NO</id>
+                    <name>Norwegian</name>
+                </option>
+                <option>
+                    <id>nl</id>
+                    <name>Dutch</name>
+                </option>
+                <option>
+                    <id>pl</id>
+                    <name>Polish</name>
+                </option>
+                <option>
+                    <id>pt-BR</id>
+                    <name>Portuguese (BR)</name>
+                </option>
+                <option>
+                    <id>pt-PT</id>
+                    <name>Portuguese/Portugal</name>
+                </option>
+                <option>
+                    <id>ro</id>
+                    <name>Romanian</name>
+                </option>
+                <option>
+                    <id>ru-RU</id>
+                    <name>Russian</name>
+                </option>
+                <option>
+                    <id>sk</id>
+                    <name>Slovak</name>
+                </option>
+                <option>
+                    <id>sl</id>
+                    <name>Slovenian</name>
+                </option>
+                <option>
+                    <id>sv-SE</id>
+                    <name>Swedish</name>
+                </option>
+                <option>
+                    <id>th</id>
+                    <name>Thai</name>
+                </option>
+                <option>
+                    <id>tr</id>
+                    <name>Turkish</name>
+                </option>
+                <option>
+                    <id>uk</id>
+                    <name>Ukrainian</name>
+                </option>
+                <option>
+                    <id>vi</id>
+                    <name>Vietnamese</name>
+                </option>
+                <option>
+                    <id>zh-CN</id>
+                    <name>Chinese</name>
+                </option>
+                <option>
+                    <id>zh-TW</id>
+                    <name>Chinese (Traditional)</name>
+                </option>
+            </options>
+        </input-field>
+
+        <input-field type="bool">
+            <name>enableRegistrationSyncCheckbox</name>
+            <label>Show marketing consent checkbox on registration</label>
+            <label lang="de-DE">Marketing-Einwilligungs-Checkbox bei der Registrierung anzeigen</label>
+            <helpText>When enabled, customers can explicitly opt in to marketing communication during registration.</helpText>
+            <helpText lang="de-DE">Wenn aktiviert, koennen Kunden waehrend der Registrierung ausdruecklich in Marketingkommunikation einwilligen.</helpText>
+            <defaultValue>false</defaultValue>
+        </input-field>
+
+        <input-field type="text">
+            <name>registrationSyncCheckboxLabel</name>
+            <label>Marketing consent</label>
+            <label lang="de-DE">Marketing-Einwilligung</label>
+            <helpText>Optional custom label shown next to the marketing consent checkbox. Leave empty to use the storefront snippet.</helpText>
+            <helpText lang="de-DE">Optionales eigenes Label neben der Marketing-Einwilligungs-Checkbox. Leer lassen, um das Storefront-Snippet zu verwenden.</helpText>
+            <placeholder>I’d like to receive occasional updates, offers, and news from by email</placeholder>
+        </input-field>
+    </card>
+
+</config>

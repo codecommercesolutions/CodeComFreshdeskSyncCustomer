@@ -1,0 +1,25 @@
+{% sw_extends '@Storefront/storefront/component/account/register.html.twig' %}
+
+{% block component_account_register_privacy %}
+    {% set freshdeskRegistrationCheckboxEnabled = config('CodeComFreshdeskSyncCustomer.config.enabled') and config('CodeComFreshdeskSyncCustomer.config.enableRegistrationSyncCheckbox') %}
+
+    {% if freshdeskRegistrationCheckboxEnabled %}
+        {% set configuredLabel = config('CodeComFreshdeskSyncCustomer.config.registrationSyncCheckboxLabel') %}
+        {% set checkboxLabel = configuredLabel ?: 'freshdesk.registration.syncConsentLabel'|trans %}
+
+        <div class="form-check register-freshdesk-sync mb-3">
+            <input type="checkbox"
+                   class="form-check-input"
+                   name="freshdeskSyncContactConsent"
+                   value="1"
+                   id="freshdeskSyncContactConsent"
+                   {% if data.get('freshdeskSyncContactConsent') %}checked="checked"{% endif %}>
+            <label class="form-check-label"
+                   for="freshdeskSyncContactConsent">
+                {{ checkboxLabel|sw_sanitize }}
+            </label>
+        </div>
+    {% endif %}
+
+    {{ parent() }}
+{% endblock %}
