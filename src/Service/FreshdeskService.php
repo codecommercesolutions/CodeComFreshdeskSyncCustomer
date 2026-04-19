@@ -120,6 +120,37 @@ class FreshdeskService
     }
 
     /**
+     * Map Shopware locale (e.g. de-DE, fr-CH) to Freshdesk language code.
+     */
+    public function mapShopwareLocaleToFreshdeskLanguage(string $locale): string
+    {
+        $this->log("mapShopwareLocaleToFreshdeskLanguage() called | locale={$locale}");
+
+        // Normalize locale (e.g. de-DE -> de, fr-CH -> fr)
+        $parts = explode('-', $locale);
+        $shortCode = strtolower($parts[0]);
+
+        $supportedLanguages = [
+            'ar', 'ca', 'cs', 'cy-GB', 'da', 'de', 'en', 'es', 'es-LA', 'et',
+            'fi', 'fr', 'he', 'hr', 'hu', 'id', 'it', 'ja-JP', 'ko', 'lv-LV',
+            'nb-NO', 'nl', 'pl', 'pt-BR', 'pt-PT', 'ro', 'ru-RU', 'sk', 'sl',
+            'sv-SE', 'th', 'tr', 'uk', 'vi', 'zh-CN', 'zh-TW'
+        ];
+
+        // Check for full match first (e.g. cy-GB)
+        if (in_array($locale, $supportedLanguages, true)) {
+            return $locale;
+        }
+
+        // Check for short code match (e.g. de)
+        if (in_array($shortCode, $supportedLanguages, true)) {
+            return $shortCode;
+        }
+
+        return 'en'; // Default to English
+    }
+
+    /**
      * Create or update a Freshdesk contact from the Shopware registration flow.
      *
      * @return array{success: bool, id?: int|null, created?: bool, message?: string}
@@ -129,9 +160,10 @@ class FreshdeskService
         ?string $salesChannelId = null,
         ?string $name = null,
         ?string $phone = null,
-        ?string $address = null
+        ?string $address = null,
+        ?string $shopwareLanguageCode = null
     ): array {
-        $this->log("createOrUpdateRegistrationContact() called | email={$email} | name={$name} | address={$address}");
+        $this->log("createOrUpdateRegistrationContact() called | email={$email} | name={$name} | address={$address} | language={$shopwareLanguageCode}");
 
         $email = trim($email);
         if ($email === '') {
@@ -144,9 +176,9 @@ class FreshdeskService
             $tag = 'Webshop';
         }
 
-        $language = $this->systemConfigService->getString('CodeComFreshdeskSyncCustomer.config.contactLanguage', $salesChannelId);
-        if ($language === '') {
-            $language = 'en';
+        $language = 'en';
+        if ($shopwareLanguageCode !== null) {
+            $language = $this->mapShopwareLocaleToFreshdeskLanguage($shopwareLanguageCode);
         }
 
         $existingContact = $this->findContactByEmail($email, $salesChannelId);

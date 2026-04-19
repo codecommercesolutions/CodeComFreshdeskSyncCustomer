@@ -64,7 +64,7 @@ class CustomerRegistrationSubscriber implements EventSubscriberInterface
         $event->setOutput($output);
     }
 
-    public function onCustomerRegister(CustomerRegisterEvent $event): void
+    public function onCustomerRegister(CustomerRegisterEvent|GuestCustomerRegisterEvent $event): void
     {
         $salesChannelId = $event->getSalesChannelId();
 
@@ -92,7 +92,8 @@ class CustomerRegistrationSubscriber implements EventSubscriberInterface
             $salesChannelId,
             $this->buildCustomerName($customer),
             $customer->getDefaultBillingAddress()?->getPhoneNumber(),
-            $this->buildCustomerAddress($customer)
+            $this->buildCustomerAddress($customer),
+            $customer->getLanguage()?->getLocale()?->getCode()
         );
 
         if (!$result['success']) {
@@ -149,6 +150,8 @@ class CustomerRegistrationSubscriber implements EventSubscriberInterface
         $criteria = new Criteria([$customer->getId()]);
         $criteria->addAssociation('defaultBillingAddress');
         $criteria->addAssociation('defaultBillingAddress.country');
+        $criteria->addAssociation('language');
+        $criteria->addAssociation('language.locale');
 
         $loadedCustomer = $this->customerRepository
             ->search($criteria, $context)
