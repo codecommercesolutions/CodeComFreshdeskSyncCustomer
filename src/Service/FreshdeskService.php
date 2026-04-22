@@ -11,24 +11,18 @@ class FreshdeskService
 {
     public function __construct(
         private readonly HttpClientInterface $httpClient,
-        private readonly SystemConfigService $systemConfigService
+        private readonly SystemConfigService $systemConfigService,
+        private readonly \Psr\Log\LoggerInterface $logger
     ) {
     }
 
     // ─────────────────────────────────────────────────────────────────────────
     // Logging helper
-    // Writes to var/log/codecom-freshdesk-sync-YYYY-MM-DD.log, one line per call.
+    // Routes plugin diagnostics through Shopware's logger.
     // ─────────────────────────────────────────────────────────────────────────
     private function log(string $message): void
     {
-        $date      = (new \DateTime())->format('Y-m-d');
-        $logFile   = getcwd() . '/../var/log/codecom-freshdesk-sync-' . $date . '.log';
-        $timestamp = (new \DateTime())->format('Y-m-d H:i:s');
-        @file_put_contents(
-            $logFile,
-            '[' . $timestamp . '] ' . $message . "\n",
-            FILE_APPEND
-        );
+        $this->logger->info($message, ['plugin' => 'CodeComFreshdeskSyncCustomer']);
     }
 
     /**

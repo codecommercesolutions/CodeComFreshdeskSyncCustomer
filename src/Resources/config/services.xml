@@ -8,6 +8,7 @@
         <service id="CodeCom\FreshdeskSyncCustomer\Service\FreshdeskService">
             <argument type="service" id="Symfony\Contracts\HttpClient\HttpClientInterface"/>
             <argument type="service" id="Shopware\Core\System\SystemConfig\SystemConfigService"/>
+            <argument type="service" id="logger"/>
         </service>
 
         <service id="CodeCom\FreshdeskSyncCustomer\Subscriber\CustomerRegistrationSubscriber">
