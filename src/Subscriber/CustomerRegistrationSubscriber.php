@@ -9,6 +9,7 @@ use Psr\Log\LoggerInterface;
 use Shopware\Core\Checkout\Customer\CustomerCollection;
 use Shopware\Core\Checkout\Customer\CustomerEntity;
 use Shopware\Core\Checkout\Customer\CustomerEvents;
+use Shopware\Core\Checkout\Customer\Event\CustomerDoubleOptInRegistrationEvent;
 use Shopware\Core\Checkout\Customer\Event\CustomerRegisterEvent;
 use Shopware\Core\Checkout\Customer\Event\GuestCustomerRegisterEvent;
 use Shopware\Core\Framework\Context;
@@ -23,6 +24,10 @@ class CustomerRegistrationSubscriber implements EventSubscriberInterface
     private const CONSENT_FIELD = 'freshdeskSyncContactConsent';
 
     private const CONSENT_CUSTOM_FIELD = 'freshdesk_sync_contact_consent';
+
+    private const OPTIN_SYNC_MODE_DIRECT_CHECKBOX = 'direct_checkbox';
+
+    private const OPTIN_SYNC_MODE_SHOPWARE_DOUBLE_OPTIN = 'shopware_double_optin';
 
     /**
      * @param EntityRepository<CustomerCollection> $customerRepository
@@ -39,6 +44,7 @@ class CustomerRegistrationSubscriber implements EventSubscriberInterface
     {
         return [
             CustomerEvents::MAPPING_REGISTER_CUSTOMER => 'mapRegistrationConsent',
+            CustomerDoubleOptInRegistrationEvent::class => 'onCustomerDoubleOptInRegistration',
             CustomerRegisterEvent::class => 'onCustomerRegister',
             GuestCustomerRegisterEvent::class => 'onCustomerRegister',
         ];
@@ -72,16 +78,29 @@ class CustomerRegistrationSubscriber implements EventSubscriberInterface
             return;
         }
 
-        if (!$this->systemConfigService->getBool('CodeComFreshdeskSyncCustomer.config.enableRegistrationSyncCheckbox', $salesChannelId)) {
+        $customer = $this->loadCustomer($event->getCustomer(), $event->getContext());
+        $optin = $this->getRegistrationOptin($customer, $salesChannelId);
+
+        $this->syncCustomerToFreshdesk($customer, $salesChannelId, $optin, 'Freshdesk registration contact sync failed');
+    }
+
+    public function onCustomerDoubleOptInRegistration(CustomerDoubleOptInRegistrationEvent $event): void
+    {
+        $salesChannelId = $event->getSalesChannelId();
+        if (!$this->systemConfigService->getBool('CodeComFreshdeskSyncCustomer.config.enabled', $salesChannelId)) {
             return;
         }
 
         $customer = $this->loadCustomer($event->getCustomer(), $event->getContext());
+        $optin = $this->getOptinSyncMode($salesChannelId) === self::OPTIN_SYNC_MODE_SHOPWARE_DOUBLE_OPTIN
+            ? false
+            : $this->hasFreshdeskConsent($customer);
 
-        if (!$this->hasFreshdeskConsent($customer)) {
-            return;
-        }
+        $this->syncCustomerToFreshdesk($customer, $salesChannelId, $optin, 'Freshdesk initial double Optin registration contact sync failed');
+    }
 
+    private function syncCustomerToFreshdesk(CustomerEntity $customer, string $salesChannelId, bool $optin, string $failureMessage): void
+    {
         $email = trim((string) $customer->getEmail());
         if ($email === '') {
             return;
@@ -93,16 +112,43 @@ class CustomerRegistrationSubscriber implements EventSubscriberInterface
             $this->buildCustomerName($customer),
             $customer->getDefaultBillingAddress()?->getPhoneNumber(),
             $this->buildCustomerAddress($customer),
-            $customer->getLanguage()?->getLocale()?->getCode()
+            $customer->getLanguage()?->getLocale()?->getCode(),
+            $optin
         );
 
         if (!$result['success']) {
-            $this->logger->warning('Freshdesk registration contact sync failed', [
+            $this->logger->warning($failureMessage, [
                 'customerId' => $customer->getId(),
                 'salesChannelId' => $salesChannelId,
+                'optin' => $optin,
                 'message' => $result['message'] ?? 'unknown error',
             ]);
         }
+    }
+
+    private function getRegistrationOptin(CustomerEntity $customer, string $salesChannelId): bool
+    {
+        if ($this->getOptinSyncMode($salesChannelId) === self::OPTIN_SYNC_MODE_SHOPWARE_DOUBLE_OPTIN) {
+            return $this->isConfirmedDoubleOptInRegistration($customer);
+        }
+
+        return $this->hasFreshdeskConsent($customer);
+    }
+
+    private function getOptinSyncMode(string $salesChannelId): string
+    {
+        $mode = $this->systemConfigService->getString('CodeComFreshdeskSyncCustomer.config.optinSyncMode', $salesChannelId);
+
+        if ($mode === self::OPTIN_SYNC_MODE_SHOPWARE_DOUBLE_OPTIN) {
+            return self::OPTIN_SYNC_MODE_SHOPWARE_DOUBLE_OPTIN;
+        }
+
+        return self::OPTIN_SYNC_MODE_DIRECT_CHECKBOX;
+    }
+
+    private function isConfirmedDoubleOptInRegistration(CustomerEntity $customer): bool
+    {
+        return $customer->getDoubleOptInRegistration() && $customer->getDoubleOptInConfirmDate() !== null;
     }
 
     private function hasFreshdeskConsent(CustomerEntity $customer): bool
@@ -129,13 +175,18 @@ class CustomerRegistrationSubscriber implements EventSubscriberInterface
             return null;
         }
 
+        $country = $address->getCountry();
+        $countryName = $country?->getTranslated()['name']
+            ?? $country?->getName()
+            ?? $country?->getIso();
+
         $parts = array_filter([
             trim($address->getStreet()),
             trim((string) $address->getAdditionalAddressLine1()),
             trim((string) $address->getAdditionalAddressLine2()),
             trim($address->getZipcode() ?? ''),
             trim($address->getCity()),
-            trim((string) $address->getCountry()?->getName()),
+            trim((string) $countryName),
         ], static fn (?string $value): bool => $value !== null && $value !== '');
 
         if ($parts === []) {

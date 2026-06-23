@@ -42,6 +42,37 @@
             <defaultValue>Webshop</defaultValue>
         </input-field>
 
+        <input-field type="single-select">
+            <name>optinSyncMode</name>
+            <label>Freshdesk Optin sync mode</label>
+            <label lang="de-DE">Freshdesk Optin Synchronisationsmodus</label>
+            <helpText>Contacts are always synced. Direct checkbox mode writes the storefront checkbox value to the configured Freshdesk Optin field. Shopware account double Optin mode writes false during registration and changes it to true only after the customer clicks the Shopware registration confirmation email.</helpText>
+            <helpText lang="de-DE">Kontakte werden immer synchronisiert. Der Modus Direkte Checkbox schreibt den Wert der Storefront-Checkbox in das konfigurierte Freshdesk Optin-Feld. Der Modus Shopware Konto Double-Optin schreibt bei der Registrierung false und setzt erst nach Klick auf die Shopware Registrierungs-Bestaetigungs-E-Mail auf true.</helpText>
+            <defaultValue>direct_checkbox</defaultValue>
+            <options>
+                <option>
+                    <id>direct_checkbox</id>
+                    <name>Direct checkbox</name>
+                    <name lang="de-DE">Direkte Checkbox</name>
+                </option>
+                <option>
+                    <id>shopware_double_optin</id>
+                    <name>Shopware account double Optin</name>
+                    <name lang="de-DE">Shopware Konto Double-Optin</name>
+                </option>
+            </options>
+        </input-field>
+
+        <input-field type="text">
+            <name>freshdeskOptinCustomField</name>
+            <label>Freshdesk Optin custom field API name</label>
+            <label lang="de-DE">Freshdesk Optin Custom-Field API-Name</label>
+            <helpText>Freshdesk contact custom field API name used for Optin, for example cf_optin. Use the API name from Freshdesk, not the visible field label. The selected Optin sync mode writes its value to this field.</helpText>
+            <helpText lang="de-DE">API-Name des Freshdesk Kontakt-Custom-Fields fuer Optin, z. B. cf_optin. Den API-Namen aus Freshdesk verwenden, nicht das sichtbare Feld-Label. Der ausgewaehlte Optin-Synchronisationsmodus schreibt seinen Wert in dieses Feld.</helpText>
+            <placeholder>cf_optin</placeholder>
+            <defaultValue>cf_optin</defaultValue>
+        </input-field>
+
         <input-field type="bool">
             <name>enableRegistrationSyncCheckbox</name>
             <label>Show marketing consent checkbox on registration</label>
