@@ -9,6 +9,7 @@
             <argument type="service" id="Symfony\Contracts\HttpClient\HttpClientInterface"/>
             <argument type="service" id="Shopware\Core\System\SystemConfig\SystemConfigService"/>
             <argument type="service" id="logger"/>
+            <argument type="service" id="log_entry.repository"/>
         </service>
 
         <service id="CodeCom\FreshdeskSyncCustomer\Subscriber\CustomerRegistrationSubscriber">

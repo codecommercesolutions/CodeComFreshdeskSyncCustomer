@@ -73,6 +73,25 @@
             <defaultValue>cf_optin</defaultValue>
         </input-field>
 
+        <input-field type="single-select">
+            <name>freshdeskOptinCustomFieldType</name>
+            <label>Freshdesk Optin custom field data type</label>
+            <label lang="de-DE">Datentyp des Freshdesk Optin Custom-Fields</label>
+            <defaultValue>boolean</defaultValue>
+            <options>
+                <option>
+                    <id>boolean</id>
+                    <name>Boolean</name>
+                    <name lang="de-DE">Boolesch</name>
+                </option>
+                <option>
+                    <id>string</id>
+                    <name>String</name>
+                    <name lang="de-DE">Zeichenkette</name>
+                </option>
+            </options>
+        </input-field>
+
         <input-field type="bool">
             <name>enableRegistrationSyncCheckbox</name>
             <label>Show marketing consent checkbox on registration</label>

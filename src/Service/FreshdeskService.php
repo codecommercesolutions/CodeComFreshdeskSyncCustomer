@@ -4,15 +4,20 @@ declare(strict_types=1);
 
 namespace CodeCom\FreshdeskSyncCustomer\Service;
 
+use Shopware\Core\Framework\Context;
+use Shopware\Core\Framework\DataAbstractionLayer\EntityRepository;
 use Shopware\Core\System\SystemConfig\SystemConfigService;
 use Symfony\Contracts\HttpClient\HttpClientInterface;
+use Symfony\Contracts\HttpClient\Exception\HttpExceptionInterface;
+use Symfony\Contracts\HttpClient\ResponseInterface;
 
 class FreshdeskService
 {
     public function __construct(
         private readonly HttpClientInterface $httpClient,
         private readonly SystemConfigService $systemConfigService,
-        private readonly \Psr\Log\LoggerInterface $logger
+        private readonly \Psr\Log\LoggerInterface $logger,
+        private readonly EntityRepository $logEntryRepository
     ) {
     }
 
@@ -23,6 +28,30 @@ class FreshdeskService
     private function log(string $message): void
     {
         $this->logger->info($message, ['plugin' => 'CodeComFreshdeskSyncCustomer']);
+    }
+
+    private function logToDatabase(string $requestUrl, array $requestPayload, ResponseInterface $response, Context $context): void
+    {
+        $statusCode = $response->getStatusCode();
+        $responseBody = $response->getContent(false);
+
+        $this->logEntryRepository->create([
+            [
+                'message' => 'Freshdesk API Call',
+                'level' => $statusCode >= 400 ? \Monolog\Logger::ERROR : \Monolog\Logger::INFO,
+                'channel' => 'Freshdesk API',
+                'context' => [
+                    'request' => [
+                        'url' => $requestUrl,
+                        'payload' => $requestPayload,
+                    ],
+                    'response' => [
+                        'statusCode' => $statusCode,
+                        'body' => json_decode($responseBody, true) ?? $responseBody,
+                    ],
+                ],
+            ],
+        ], $context);
     }
 
     /**
@@ -48,9 +77,12 @@ class FreshdeskService
             $response = $this->httpClient->request('GET', $url, [
                 'auth_basic' => [is_string($apiKey) ? $apiKey : '', 'X'],
             ]);
+            
+            $this->logToDatabase($url, [], $response, Context::createDefaultContext());
+            
             $data     = $response->toArray(false);
 
-            $this->log("findContactByEmail() ← HTTP " . $response->getStatusCode());
+            $this->log("findContactByEmail() ← HTTP " . $response->getStatusCode() . ' | body=' . json_encode($data));
 
             if (is_array($data) && isset($data[0]) && is_array($data[0])) {
                 $this->log("findContactByEmail() contact found | id=" . ($data[0]['id'] ?? '-'));
@@ -64,7 +96,13 @@ class FreshdeskService
             $this->log("findContactByEmail() no contact found for email={$email}");
             return null;
         } catch (\Exception $e) {
-            $this->log('findContactByEmail() EXCEPTION | ' . $e->getMessage());
+            $message = $e->getMessage();
+            if ($e instanceof HttpExceptionInterface) {
+                try {
+                    $message .= ' | Response: ' . $e->getResponse()->getContent(false);
+                } catch (\Exception $e) {}
+            }
+            $this->log('findContactByEmail() EXCEPTION | ' . $message);
             return null;
         }
     }
@@ -95,6 +133,9 @@ class FreshdeskService
                 'headers'    => ['Content-Type' => 'application/json'],
                 'json'       => $data,
             ]);
+
+            $this->logToDatabase($url, $data, $response, Context::createDefaultContext());
+
             $statusCode = $response->getStatusCode();
 
             $responseBody = $response->toArray(false);
@@ -105,10 +146,15 @@ class FreshdeskService
                 return ['success' => true];
             }
 
-            $this->log("updateFreshdeskContact() FAILED | HTTP {$statusCode} | body=" . json_encode($responseBody));
             return ['success' => false, 'message' => 'Update contact failed: HTTP ' . $statusCode . ' | ' . json_encode($responseBody)];
         } catch (\Exception $e) {
-            $this->log('updateFreshdeskContact() EXCEPTION | ' . $e->getMessage());
+            $message = $e->getMessage();
+            if ($e instanceof HttpExceptionInterface) {
+                try {
+                    $message .= ' | Response: ' . $e->getResponse()->getContent(false);
+                } catch (\Exception $e) {}
+            }
+            $this->log('updateFreshdeskContact() EXCEPTION | ' . $message);
             return ['success' => false, 'message' => $e->getMessage()];
         }
     }
@@ -196,7 +242,7 @@ class FreshdeskService
             $updateData['language'] = $language;
 
             if ($optinCustomField !== null) {
-                $updateData['custom_fields'] = [$optinCustomField => $optin];
+                $updateData['custom_fields'] = [$optinCustomField => $this->formatOptinValue($optin, $salesChannelId)];
             }
 
             $existingTags = $existingContact['tags'] ?? [];
@@ -254,7 +300,7 @@ class FreshdeskService
         $payload['language'] = $language;
 
         if ($optinCustomField !== null) {
-            $payload['custom_fields'] = [$optinCustomField => $optin];
+            $payload['custom_fields'] = [$optinCustomField => $this->formatOptinValue($optin, $salesChannelId)];
         }
 
         try {
@@ -266,6 +312,9 @@ class FreshdeskService
                 'headers' => ['Content-Type' => 'application/json'],
                 'json' => $payload,
             ]);
+
+            $this->logToDatabase($url, $payload, $response, Context::createDefaultContext());
+
             $statusCode = $response->getStatusCode();
             $responseData = $response->toArray(false);
 
@@ -302,7 +351,7 @@ class FreshdeskService
                     $updateData['language'] = $language;
 
                     if ($optinCustomField !== null) {
-                        $updateData['custom_fields'] = [$optinCustomField => $optin];
+                        $updateData['custom_fields'] = [$optinCustomField => $this->formatOptinValue($optin, $salesChannelId)];
                     }
 
                     $existingTags = $existingContact['tags'] ?? [];
@@ -339,9 +388,26 @@ class FreshdeskService
                 'message' => 'Failed to create contact: ' . json_encode($responseData),
             ];
         } catch (\Exception $e) {
-            $this->log('createOrUpdateRegistrationContact() EXCEPTION | ' . $e->getMessage());
+            $message = $e->getMessage();
+            if ($e instanceof HttpExceptionInterface) {
+                try {
+                    $message .= ' | Response: ' . $e->getResponse()->getContent(false);
+                } catch (\Exception $e) {}
+            }
+            $this->log('createOrUpdateRegistrationContact() EXCEPTION | ' . $message);
             return ['success' => false, 'message' => $e->getMessage()];
         }
+    }
+
+    private function formatOptinValue(bool $optin, ?string $salesChannelId): bool|string
+    {
+        $type = $this->systemConfigService->getString('CodeComFreshdeskSyncCustomer.config.freshdeskOptinCustomFieldType', $salesChannelId);
+
+        if ($type === 'string') {
+            return $optin ? 'true' : 'false';
+        }
+
+        return $optin;
     }
 
     private function getOptinCustomField(?string $salesChannelId): ?string
