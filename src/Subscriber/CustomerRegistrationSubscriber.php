@@ -36,7 +36,8 @@ class CustomerRegistrationSubscriber implements EventSubscriberInterface
         private readonly FreshdeskService $freshdeskService,
         private readonly SystemConfigService $systemConfigService,
         private readonly EntityRepository $customerRepository,
-        private readonly LoggerInterface $logger
+        private readonly LoggerInterface $logger,
+        private readonly EntityRepository $logEntryRepository
     ) {
     }
 
@@ -81,7 +82,7 @@ class CustomerRegistrationSubscriber implements EventSubscriberInterface
         $customer = $this->loadCustomer($event->getCustomer(), $event->getContext());
         $optin = $this->getRegistrationOptin($customer, $salesChannelId);
 
-        $this->syncCustomerToFreshdesk($customer, $salesChannelId, $optin, 'Freshdesk registration contact sync failed');
+        $this->syncCustomerToFreshdesk($customer, $salesChannelId, $optin, 'Freshdesk registration contact sync failed', $event->getContext());
     }
 
     public function onCustomerDoubleOptInRegistration(CustomerDoubleOptInRegistrationEvent $event): void
@@ -96,10 +97,10 @@ class CustomerRegistrationSubscriber implements EventSubscriberInterface
             ? false
             : $this->hasFreshdeskConsent($customer);
 
-        $this->syncCustomerToFreshdesk($customer, $salesChannelId, $optin, 'Freshdesk initial double Optin registration contact sync failed');
+        $this->syncCustomerToFreshdesk($customer, $salesChannelId, $optin, 'Freshdesk initial double Optin registration contact sync failed', $event->getContext());
     }
 
-    private function syncCustomerToFreshdesk(CustomerEntity $customer, string $salesChannelId, bool $optin, string $failureMessage): void
+    private function syncCustomerToFreshdesk(CustomerEntity $customer, string $salesChannelId, bool $optin, string $failureMessage, Context $context): void
     {
         $email = trim((string) $customer->getEmail());
         if ($email === '') {
@@ -115,6 +116,19 @@ class CustomerRegistrationSubscriber implements EventSubscriberInterface
             $customer->getLanguage()?->getLocale()?->getCode(),
             $optin
         );
+
+        $this->logEntryRepository->create([
+            [
+                'message' => 'Freshdesk Sync Result',
+                'level' => ($result['success'] ?? false) ? \Monolog\Logger::INFO : \Monolog\Logger::WARNING,
+                'channel' => 'Freshdesk Sync',
+                'context' => [
+                    'result' => $result,
+                    'customerId' => $customer->getId(),
+                    'salesChannelId' => $salesChannelId,
+                ],
+            ],
+        ], $context);
 
         if (!$result['success']) {
             $this->logger->warning($failureMessage, [
