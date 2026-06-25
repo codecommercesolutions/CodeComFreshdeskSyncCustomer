@@ -196,7 +196,7 @@ class FreshdeskService
             $updateData['language'] = $language;
 
             if ($optinCustomField !== null) {
-                $updateData['custom_fields'] = [$optinCustomField => $this->formatOptinValue($optin)];
+                $updateData['custom_fields'] = [$optinCustomField => $optin];
             }
 
             $existingTags = $existingContact['tags'] ?? [];
@@ -254,7 +254,7 @@ class FreshdeskService
         $payload['language'] = $language;
 
         if ($optinCustomField !== null) {
-            $payload['custom_fields'] = [$optinCustomField => $this->formatOptinValue($optin)];
+            $payload['custom_fields'] = [$optinCustomField => $optin];
         }
 
         try {
@@ -302,7 +302,7 @@ class FreshdeskService
                     $updateData['language'] = $language;
 
                     if ($optinCustomField !== null) {
-                        $updateData['custom_fields'] = [$optinCustomField => $this->formatOptinValue($optin)];
+                        $updateData['custom_fields'] = [$optinCustomField => $optin];
                     }
 
                     $existingTags = $existingContact['tags'] ?? [];
@@ -342,11 +342,6 @@ class FreshdeskService
             $this->log('createOrUpdateRegistrationContact() EXCEPTION | ' . $e->getMessage());
             return ['success' => false, 'message' => $e->getMessage()];
         }
-    }
-
-    private function formatOptinValue(bool $optin): string
-    {
-        return $optin ? 'true' : 'false';
     }
 
     private function getOptinCustomField(?string $salesChannelId): ?string
