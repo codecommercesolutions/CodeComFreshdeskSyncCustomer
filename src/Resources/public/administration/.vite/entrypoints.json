@@ -1,0 +1,23 @@
+{
+  "base": "/bundles/codecomfreshdesksynccustomer/administration/",
+  "entryPoints": {
+    "code-com-freshdesk-sync-customer": {
+      "css": [],
+      "dynamic": [],
+      "js": [
+        "/bundles/codecomfreshdesksynccustomer/administration/assets/code-com-freshdesk-sync-customer-BpbHzn18.js"
+      ],
+      "legacy": false,
+      "preload": []
+    }
+  },
+  "legacy": false,
+  "metadatas": {},
+  "version": [
+    "7.1.0",
+    7,
+    1,
+    0
+  ],
+  "viteServer": null
+}

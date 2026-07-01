@@ -202,7 +202,8 @@ class FreshdeskService
         ?string $phone = null,
         ?string $address = null,
         ?string $shopwareLanguageCode = null,
-        bool $optin = false
+        bool $optin = false,
+        array|string|null $contactTags = null
     ): array {
         $this->log("createOrUpdateRegistrationContact() called | email={$email} | name={$name} | address={$address} | language={$shopwareLanguageCode} | optin=" . ($optin ? 'true' : 'false'));
 
@@ -212,9 +213,10 @@ class FreshdeskService
             return ['success' => false, 'message' => 'Email is required'];
         }
 
-        $tag = $this->systemConfigService->getString('CodeComFreshdeskSyncCustomer.config.contactTag', $salesChannelId);
-        if ($tag === '') {
-            $tag = 'Webshop';
+        $tags = $this->normalizeContactTags($contactTags);
+        if ($tags === []) {
+            $fallbackTag = $this->systemConfigService->getString('CodeComFreshdeskSyncCustomer.config.contactTag', $salesChannelId);
+            $tags = [$fallbackTag !== '' ? $fallbackTag : 'Webshop'];
         }
 
         $language = 'en';
@@ -249,9 +251,9 @@ class FreshdeskService
             if (!is_array($existingTags)) {
                 $existingTags = [];
             }
-            if (!in_array($tag, $existingTags, true)) {
-                $existingTags[] = $tag;
-                $updateData['tags'] = $existingTags;
+            $mergedTags = array_values(array_unique(array_merge($existingTags, $tags)));
+            if ($mergedTags !== $existingTags) {
+                $updateData['tags'] = $mergedTags;
             }
 
             if ($updateData === []) {
@@ -296,7 +298,7 @@ class FreshdeskService
             $payload['address'] = $address;
         }
 
-        $payload['tags'] = [$tag];
+        $payload['tags'] = $tags;
         $payload['language'] = $language;
 
         if ($optinCustomField !== null) {
@@ -358,9 +360,9 @@ class FreshdeskService
                     if (!is_array($existingTags)) {
                         $existingTags = [];
                     }
-                    if (!in_array($tag, $existingTags, true)) {
-                        $existingTags[] = $tag;
-                        $updateData['tags'] = $existingTags;
+                    $mergedTags = array_values(array_unique(array_merge($existingTags, $tags)));
+                    if ($mergedTags !== $existingTags) {
+                        $updateData['tags'] = $mergedTags;
                     }
 
                     if ($updateData !== []) {
@@ -408,6 +410,34 @@ class FreshdeskService
         }
 
         return $optin;
+    }
+
+    /**
+     * @return list<string>
+     */
+    private function normalizeContactTags(array|string|null $contactTags): array
+    {
+        if (is_string($contactTags)) {
+            $contactTags = [$contactTags];
+        }
+
+        if (!is_array($contactTags)) {
+            return [];
+        }
+
+        $tags = [];
+        foreach ($contactTags as $tag) {
+            if (!is_scalar($tag)) {
+                continue;
+            }
+
+            $tag = trim((string) $tag);
+            if ($tag !== '') {
+                $tags[] = $tag;
+            }
+        }
+
+        return array_values(array_unique($tags));
     }
 
     private function getOptinCustomField(?string $salesChannelId): ?string

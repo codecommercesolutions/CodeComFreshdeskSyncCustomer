@@ -37,8 +37,8 @@
             <name>contactTag</name>
             <label>Contact Tag</label>
             <label lang="de-DE">Kontakt-Tag</label>
-            <helpText>Tag assigned to the contact in Freshdesk. Default is Webshop.</helpText>
-            <helpText lang="de-DE">Tag, das dem Kontakt in Freshdesk zugewiesen wird. Standard ist Webshop.</helpText>
+            <helpText>Fallback tag assigned to the contact in Freshdesk when no CH/EU customer tag is found. Default is Webshop.</helpText>
+            <helpText lang="de-DE">Fallback-Tag fuer Freshdesk, wenn kein CH/EU-Kunden-Tag gefunden wird. Standard ist Webshop.</helpText>
             <defaultValue>Webshop</defaultValue>
         </input-field>
 
@@ -105,9 +105,165 @@
             <name>registrationSyncCheckboxLabel</name>
             <label>Marketing consent</label>
             <label lang="de-DE">Marketing-Einwilligung</label>
-            <helpText>Optional custom label shown next to the marketing consent checkbox. Leave empty to use the storefront snippet.</helpText>
-            <helpText lang="de-DE">Optionales eigenes Label neben der Marketing-Einwilligungs-Checkbox. Leer lassen, um das Storefront-Snippet zu verwenden.</helpText>
+            <helpText>Optional custom label shown next to the marketing consent checkbox. Leave empty to use storefront snippet freshdesk.registration.syncConsentLabel.</helpText>
+            <helpText lang="de-DE">Optionales eigenes Label neben der Marketing-Einwilligungs-Checkbox. Leer lassen, um das Storefront-Snippet freshdesk.registration.syncConsentLabel zu verwenden.</helpText>
             <placeholder>I’d like to receive occasional updates, offers, and news from by email</placeholder>
+        </input-field>
+    </card>
+
+    <card>
+        <title>Automatic customer sync</title>
+        <title lang="de-DE">Automatische Kundensynchronisierung</title>
+
+        <input-field type="bool">
+            <name>enableAutomaticCustomerSync</name>
+            <label>Enable cron customer sync</label>
+            <label lang="de-DE">Cron-Kundensynchronisierung aktivieren</label>
+            <defaultValue>false</defaultValue>
+        </input-field>
+
+        <input-field type="single-select">
+            <name>customerTransferMode</name>
+            <label>Customer transfer mode</label>
+            <label lang="de-DE">Kunden-Uebertragungsmodus</label>
+            <helpText>Controls whether all customers are transferred to Freshdesk or only customers with Optin.</helpText>
+            <helpText lang="de-DE">Steuert, ob alle Kunden oder nur Kunden mit Optin zu Freshdesk uebertragen werden.</helpText>
+            <defaultValue>all</defaultValue>
+            <options>
+                <option>
+                    <id>all</id>
+                    <name>Transfer all customers</name>
+                    <name lang="de-DE">Alle Kunden uebertragen</name>
+                </option>
+                <option>
+                    <id>optin_only</id>
+                    <name>Transfer only customers with Optin</name>
+                    <name lang="de-DE">Nur Kunden mit Optin uebertragen</name>
+                </option>
+            </options>
+        </input-field>
+
+        <input-field type="int">
+            <name>cronCustomerBatchSize</name>
+            <label>Cron customer batch size</label>
+            <label lang="de-DE">Cron Kunden-Batchgroesse</label>
+            <helpText>Number of customers processed per scheduled run.</helpText>
+            <helpText lang="de-DE">Anzahl der Kunden pro geplantem Lauf.</helpText>
+            <defaultValue>50</defaultValue>
+        </input-field>
+    </card>
+
+    <card>
+        <title>Customer sync status</title>
+        <title lang="de-DE">Kundensync-Status</title>
+
+        <input-field type="text">
+            <name>lastSuccessfulCustomerSyncAt</name>
+            <label>Last successful cron sync time</label>
+            <label lang="de-DE">Letzte erfolgreiche Cron-Synchronisierung</label>
+            <helpText>Updated automatically after each successful scheduled customer sync run.</helpText>
+            <helpText lang="de-DE">Wird nach jedem erfolgreichen geplanten Kundensync automatisch aktualisiert.</helpText>
+        </input-field>
+
+        <input-field type="text">
+            <name>lastCustomerSyncStatus</name>
+            <label>Last cron sync status</label>
+            <label lang="de-DE">Status der letzten Cron-Synchronisierung</label>
+            <helpText>Automatically maintained. Values: disabled, in_progress, completed, failed.</helpText>
+            <helpText lang="de-DE">Wird automatisch gepflegt. Werte: disabled, in_progress, completed, failed.</helpText>
+        </input-field>
+
+        <input-field type="text">
+            <name>lastCustomerSyncRunAt</name>
+            <label>Last cron run time</label>
+            <label lang="de-DE">Letzter Cron-Lauf</label>
+            <helpText>Automatically updated whenever the scheduled task runs.</helpText>
+            <helpText lang="de-DE">Wird automatisch aktualisiert, wenn der geplante Task laeuft.</helpText>
+        </input-field>
+
+        <input-field type="int">
+            <name>lastCustomerSyncProcessedCount</name>
+            <label>Last cron processed customers</label>
+            <label lang="de-DE">Zuletzt verarbeitete Kunden</label>
+            <defaultValue>0</defaultValue>
+        </input-field>
+
+        <input-field type="int">
+            <name>lastCustomerSyncSyncedCount</name>
+            <label>Last cron synced customers</label>
+            <label lang="de-DE">Zuletzt synchronisierte Kunden</label>
+            <defaultValue>0</defaultValue>
+        </input-field>
+
+        <input-field type="int">
+            <name>lastCustomerSyncSkippedCount</name>
+            <label>Last cron skipped customers</label>
+            <label lang="de-DE">Zuletzt uebersprungene Kunden</label>
+            <defaultValue>0</defaultValue>
+        </input-field>
+
+        <input-field type="int">
+            <name>lastCustomerSyncFailedCount</name>
+            <label>Last cron failed customers</label>
+            <label lang="de-DE">Zuletzt fehlgeschlagene Kunden</label>
+            <defaultValue>0</defaultValue>
+        </input-field>
+
+        <input-field type="int">
+            <name>remainingCustomerSyncCount</name>
+            <label>Remaining customers to process</label>
+            <label lang="de-DE">Verbleibende Kunden</label>
+            <defaultValue>0</defaultValue>
+        </input-field>
+
+        <input-field type="int">
+            <name>totalCustomerSyncProcessedCount</name>
+            <label>Total cron processed customers</label>
+            <label lang="de-DE">Insgesamt verarbeitete Kunden</label>
+            <helpText>Automatically maintained cumulative count.</helpText>
+            <helpText lang="de-DE">Automatisch gepflegte Gesamtanzahl.</helpText>
+            <defaultValue>0</defaultValue>
+        </input-field>
+
+        <input-field type="int">
+            <name>totalCustomerSyncSyncedCount</name>
+            <label>Total cron synced customers</label>
+            <label lang="de-DE">Insgesamt synchronisierte Kunden</label>
+            <helpText>Automatically maintained cumulative count.</helpText>
+            <helpText lang="de-DE">Automatisch gepflegte Gesamtanzahl.</helpText>
+            <defaultValue>0</defaultValue>
+        </input-field>
+
+        <input-field type="int">
+            <name>totalCustomerSyncSkippedCount</name>
+            <label>Total cron skipped customers</label>
+            <label lang="de-DE">Insgesamt uebersprungene Kunden</label>
+            <helpText>Automatically maintained cumulative count.</helpText>
+            <helpText lang="de-DE">Automatisch gepflegte Gesamtanzahl.</helpText>
+            <defaultValue>0</defaultValue>
+        </input-field>
+
+        <input-field type="int">
+            <name>totalCustomerSyncFailedCount</name>
+            <label>Total cron failed sync attempts</label>
+            <label lang="de-DE">Insgesamt fehlgeschlagene Sync-Versuche</label>
+            <helpText>Automatically maintained cumulative count of failed cron attempts.</helpText>
+            <helpText lang="de-DE">Automatisch gepflegte Gesamtanzahl fehlgeschlagener Cron-Versuche.</helpText>
+            <defaultValue>0</defaultValue>
+        </input-field>
+    </card>
+
+    <card>
+        <title>Manual CLI sync</title>
+        <title lang="de-DE">Manuelle CLI-Synchronisierung</title>
+
+        <input-field type="int">
+            <name>cliCustomerBatchSize</name>
+            <label>CLI customer limit</label>
+            <label lang="de-DE">CLI Kundenlimit</label>
+            <helpText>Default number of customers processed by the manual command when no --limit option is provided.</helpText>
+            <helpText lang="de-DE">Standardanzahl fuer den manuellen Befehl, wenn keine --limit Option angegeben wird.</helpText>
+            <defaultValue>50</defaultValue>
         </input-field>
     </card>
 
