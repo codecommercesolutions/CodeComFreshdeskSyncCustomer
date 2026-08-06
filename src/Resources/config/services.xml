@@ -19,6 +19,7 @@
             <argument type="service" id="log_entry.repository"/>
             <argument type="service" id="logger"/>
             <argument>%kernel.project_dir%</argument>
+            <argument type="service" id="Doctrine\DBAL\Connection"/>
         </service>
 
         <service id="CodeCom\FreshdeskSyncCustomer\Subscriber\CustomerRegistrationSubscriber">
@@ -28,6 +29,11 @@
         </service>
 
         <service id="CodeCom\FreshdeskSyncCustomer\Command\SyncCustomersCommand">
+            <argument type="service" id="CodeCom\FreshdeskSyncCustomer\Service\CustomerSyncService"/>
+            <tag name="console.command"/>
+        </service>
+
+        <service id="CodeCom\FreshdeskSyncCustomer\Command\ResetSyncStatusCommand">
             <argument type="service" id="CodeCom\FreshdeskSyncCustomer\Service\CustomerSyncService"/>
             <tag name="console.command"/>
         </service>

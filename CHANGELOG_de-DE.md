@@ -19,3 +19,7 @@
 - Zusatzfeld freshdesk_api_response im Freshdesk-Set auf der Kunden-Entity hinzugefuegt, um API-Fehler oder Erfolg ("customer synced suceesfully in freshdesk") bei CLI-Befehlen und Cron-Laeufen zu protokollieren.
 - Oeffentliche Log-Datei freshdesk.log (public/freshdesk.log) zur Erfassung fehlgeschlagener Kunden-API-Synchronisierungen mit Kunden-ID bei CLI-Befehlen und Cron-Laeufen hinzugefuegt.
 
+# 3.2.2
+- Neuer CLI-Befehl codecom:freshdesk:reset-sync-status hinzugefuegt, um alle Kunden-Sync-Status-Flags zurueckzusetzen und die Datei public/freshdesk.log zu leeren.
+
+

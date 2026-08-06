@@ -15,6 +15,8 @@ use Shopware\Core\Framework\DataAbstractionLayer\Search\Filter\EqualsFilter;
 use Shopware\Core\Framework\DataAbstractionLayer\Search\Sorting\FieldSorting;
 use Shopware\Core\System\SystemConfig\SystemConfigService;
 
+use Doctrine\DBAL\Connection;
+
 class CustomerSyncService
 {
     public const CONSENT_CUSTOM_FIELD = 'freshdesk_sync_contact_consent';
@@ -37,9 +39,50 @@ class CustomerSyncService
         private readonly EntityRepository $customerRepository,
         private readonly EntityRepository $logEntryRepository,
         private readonly LoggerInterface $logger,
-        private readonly string $projectDir = ''
+        private readonly string $projectDir = '',
+        private readonly ?Connection $connection = null
     ) {
     }
+
+    /**
+     * @return array{affectedCustomers: int, logCleared: bool}
+     */
+    public function resetSyncStatus(): array
+    {
+        $affectedRows = 0;
+        if ($this->connection !== null) {
+            $affectedRows = (int) $this->connection->executeStatement("
+                UPDATE `customer` 
+                SET `custom_fields` = JSON_REMOVE(
+                    `custom_fields`, 
+                    '$.freshdesk_sync_customer_processed_at', 
+                    '$.freshdesk_sync_customer_synced_at', 
+                    '$.freshdesk_sync_customer_last_result',
+                    '$.freshdesk_api_response'
+                )
+                WHERE `custom_fields` IS NOT NULL
+            ");
+        }
+
+        $logFile = rtrim($this->projectDir, '/') . '/public/freshdesk.log';
+        $logCleared = false;
+        if (file_exists($logFile)) {
+            @file_put_contents($logFile, '');
+            $logCleared = true;
+        }
+
+        $this->systemConfigService->set('CodeComFreshdeskSyncCustomer.config.lastCustomerSyncProcessedCount', 0);
+        $this->systemConfigService->set('CodeComFreshdeskSyncCustomer.config.lastCustomerSyncSyncedCount', 0);
+        $this->systemConfigService->set('CodeComFreshdeskSyncCustomer.config.lastCustomerSyncSkippedCount', 0);
+        $this->systemConfigService->set('CodeComFreshdeskSyncCustomer.config.lastCustomerSyncFailedCount', 0);
+        $this->systemConfigService->set('CodeComFreshdeskSyncCustomer.config.remainingCustomerSyncCount', 0);
+
+        return [
+            'affectedCustomers' => $affectedRows,
+            'logCleared' => $logCleared,
+        ];
+    }
+
 
     /**
      * @return array{success: bool, skipped?: bool, id?: int|null, created?: bool, message?: string, optin?: bool, tags?: list<string>}

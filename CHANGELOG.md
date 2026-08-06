@@ -19,3 +19,7 @@
 - Added custom field freshdesk_api_response under Freshdesk set on Customer entity to log API error or success ("customer synced suceesfully in freshdesk") during CLI command and cron executions.
 - Added public log file freshdesk.log (public/freshdesk.log) for tracking failed customer API sync attempts with Customer ID during CLI command and cron executions.
 
+# 3.2.2
+- Added codecom:freshdesk:reset-sync-status CLI command to reset all customer sync status flags and clear public/freshdesk.log file.
+
+
