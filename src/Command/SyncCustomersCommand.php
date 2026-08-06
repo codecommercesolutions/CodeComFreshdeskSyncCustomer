@@ -45,7 +45,8 @@ class SyncCustomersCommand extends Command
                 $customerId,
                 $context,
                 null,
-                (bool) $input->getOption('mark-processed')
+                (bool) $input->getOption('mark-processed'),
+                true
             );
 
             $io->writeln(json_encode($result, JSON_PRETTY_PRINT) ?: '');
@@ -60,7 +61,8 @@ class SyncCustomersCommand extends Command
             $context,
             $limit,
             (bool) $input->getOption('only-unprocessed'),
-            (bool) $input->getOption('mark-processed')
+            (bool) $input->getOption('mark-processed'),
+            true
         );
 
         $io->success(sprintf(

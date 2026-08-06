@@ -21,6 +21,7 @@ class CustomerSyncService
     public const PROCESSED_AT_CUSTOM_FIELD = 'freshdesk_sync_customer_processed_at';
     public const SYNCED_AT_CUSTOM_FIELD = 'freshdesk_sync_customer_synced_at';
     public const LAST_RESULT_CUSTOM_FIELD = 'freshdesk_sync_customer_last_result';
+    public const API_RESPONSE_CUSTOM_FIELD = 'freshdesk_api_response';
 
     private const OPTIN_SYNC_MODE_DIRECT_CHECKBOX = 'direct_checkbox';
     private const OPTIN_SYNC_MODE_SHOPWARE_DOUBLE_OPTIN = 'shopware_double_optin';
@@ -35,14 +36,15 @@ class CustomerSyncService
         private readonly SystemConfigService $systemConfigService,
         private readonly EntityRepository $customerRepository,
         private readonly EntityRepository $logEntryRepository,
-        private readonly LoggerInterface $logger
+        private readonly LoggerInterface $logger,
+        private readonly string $projectDir = ''
     ) {
     }
 
     /**
      * @return array{success: bool, skipped?: bool, id?: int|null, created?: bool, message?: string, optin?: bool, tags?: list<string>}
      */
-    public function syncCustomer(CustomerEntity $customer, Context $context, bool $markProcessed = false): array
+    public function syncCustomer(CustomerEntity $customer, Context $context, bool $markProcessed = false, bool $isBatchOrCron = false): array
     {
         $customer = $this->loadCustomer($customer, $context);
         $salesChannelId = $customer->getSalesChannelId();
@@ -52,7 +54,7 @@ class CustomerSyncService
                 'success' => true,
                 'skipped' => true,
                 'message' => 'Freshdesk integration disabled for customer sales channel',
-            ], $markProcessed);
+            ], $markProcessed, $isBatchOrCron);
         }
 
         $optin = $this->getRegistrationOptin($customer, $salesChannelId);
@@ -63,7 +65,7 @@ class CustomerSyncService
                 'message' => 'Customer skipped because transfer mode is Optin only',
                 'optin' => $optin,
                 'tags' => $this->getFreshdeskTags($customer, $salesChannelId),
-            ], $markProcessed);
+            ], $markProcessed, $isBatchOrCron);
         }
 
         $email = trim((string) $customer->getEmail());
@@ -72,7 +74,7 @@ class CustomerSyncService
                 'success' => false,
                 'message' => 'Customer email is empty',
                 'optin' => $optin,
-            ], $markProcessed);
+            ], $markProcessed, $isBatchOrCron);
         }
 
         $tags = $this->getFreshdeskTags($customer, $salesChannelId);
@@ -113,13 +115,13 @@ class CustomerSyncService
             ]);
         }
 
-        return $this->finish($customer, $context, $result, $markProcessed);
+        return $this->finish($customer, $context, $result, $markProcessed, $isBatchOrCron);
     }
 
     /**
      * @return array{success: bool, skipped?: bool, id?: int|null, created?: bool, message?: string, optin?: bool, tags?: list<string>}
      */
-    public function syncCustomerById(string $customerId, Context $context, ?bool $optin = null, bool $markProcessed = false): array
+    public function syncCustomerById(string $customerId, Context $context, ?bool $optin = null, bool $markProcessed = false, bool $isBatchOrCron = false): array
     {
         $customer = $this->loadCustomerById($customerId, $context);
         if (!$customer instanceof CustomerEntity) {
@@ -133,7 +135,7 @@ class CustomerSyncService
             $customer = $this->loadCustomerById($customerId, $context) ?? $customer;
         }
 
-        return $this->syncCustomer($customer, $context, $markProcessed);
+        return $this->syncCustomer($customer, $context, $markProcessed, $isBatchOrCron);
     }
 
     /**
@@ -160,7 +162,7 @@ class CustomerSyncService
     /**
      * @return array{processed: int, synced: int, skipped: int, failed: int, remaining: int, results: list<array<string, mixed>>}
      */
-    public function syncCustomerBatch(Context $context, int $limit, bool $onlyUnprocessed, bool $markProcessed): array
+    public function syncCustomerBatch(Context $context, int $limit = 50, bool $onlyUnprocessed = false, bool $markProcessed = false, bool $isBatchOrCron = true): array
     {
         $limit = max(1, $limit);
         $criteria = $this->createCustomerCriteria();
@@ -187,7 +189,7 @@ class CustomerSyncService
                 continue;
             }
 
-            $result = $this->syncCustomer($customer, $context, $markProcessed);
+            $result = $this->syncCustomer($customer, $context, $markProcessed, $isBatchOrCron);
             $summary['processed']++;
             $summary['results'][] = [
                 'customerId' => $customer->getId(),
@@ -280,23 +282,57 @@ class CustomerSyncService
         return (bool) ($customFields[self::CONSENT_CUSTOM_FIELD] ?? false);
     }
 
-    private function finish(CustomerEntity $customer, Context $context, array $result, bool $markProcessed): array
+    private function finish(CustomerEntity $customer, Context $context, array $result, bool $markProcessed, bool $isBatchOrCron = false): array
     {
+        $fields = [];
         if ($markProcessed && (($result['success'] ?? false) === true)) {
             $now = (new \DateTimeImmutable())->format('Y-m-d H:i:s');
-            $fields = [
-                self::PROCESSED_AT_CUSTOM_FIELD => $now,
-                self::LAST_RESULT_CUSTOM_FIELD => ($result['skipped'] ?? false) ? 'skipped' : 'synced',
-            ];
+            $fields[self::PROCESSED_AT_CUSTOM_FIELD] = $now;
+            $fields[self::LAST_RESULT_CUSTOM_FIELD] = ($result['skipped'] ?? false) ? 'skipped' : 'synced';
 
             if (($result['skipped'] ?? false) !== true) {
                 $fields[self::SYNCED_AT_CUSTOM_FIELD] = $now;
             }
+        }
 
+        if ($isBatchOrCron) {
+            if (($result['success'] ?? false) && !($result['skipped'] ?? false)) {
+                $fields[self::API_RESPONSE_CUSTOM_FIELD] = 'customer synced suceesfully in freshdesk';
+            } elseif (!($result['success'] ?? false)) {
+                $errorMsg = is_string($result['message'] ?? null) && ($result['message'] ?? '') !== ''
+                    ? $result['message']
+                    : 'API Error occurred';
+                $fields[self::API_RESPONSE_CUSTOM_FIELD] = $errorMsg;
+                $this->logFailedCustomerToPublicFile($customer->getId(), $errorMsg);
+            }
+        }
+
+        if ($fields !== []) {
             $this->updateCustomerCustomFields($customer, $context, $fields);
         }
 
         return $result;
+    }
+
+    private function logFailedCustomerToPublicFile(string $customerId, string $errorMessage): void
+    {
+        if ($this->projectDir === '') {
+            return;
+        }
+
+        try {
+            $logDir = rtrim($this->projectDir, '/') . '/public';
+            if (!is_dir($logDir)) {
+                @mkdir($logDir, 0755, true);
+            }
+
+            $logFile = $logDir . '/freshdesk.log';
+            $logLine = sprintf("Customer Id %s and API error is %s\n", $customerId, $errorMessage);
+
+            @file_put_contents($logFile, $logLine, FILE_APPEND | LOCK_EX);
+        } catch (\Throwable $e) {
+            $this->logger->error('Failed writing freshdesk.log file: ' . $e->getMessage());
+        }
     }
 
     private function shouldSkipWithoutOptin(string $salesChannelId, bool $optin): bool
@@ -341,10 +377,18 @@ class CustomerSyncService
             }
         }
 
-        return $tagNames !== []
-            ? array_values(array_unique($tagNames))
-            : [$this->getConfigString('contactTag', 'Webshop', $salesChannelId)];
+        $configTag = trim($this->systemConfigService->getString('CodeComFreshdeskSyncCustomer.config.contactTag', $salesChannelId));
+        if ($configTag === '') {
+            $configTag = 'Webshop';
+        }
+
+        if ($configTag !== '') {
+            $tagNames[] = $configTag;
+        }
+
+        return array_values(array_unique($tagNames));
     }
+
 
     private function buildCustomerName(CustomerEntity $customer): ?string
     {

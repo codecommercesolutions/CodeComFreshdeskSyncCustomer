@@ -6,3 +6,16 @@
 
 # 3.0.0
 - First version of the freshdesk sync customer data for Shopware 6.7
+
+# 3.2.0
+- Added configurable customer transfer mode for syncing all customers or only customers with Optin.
+- Added scheduled customer batch sync with cron progress/status tracking.
+- Added manual CLI customer sync command.
+- Added customer detail administration controls for saving Optin and manually syncing a customer to Freshdesk.
+- Sync Shopware customer tags to Freshdesk contact tags and retain Optin information in the configured Freshdesk custom field.
+
+# 3.2.1
+- Added SalesChannel specific contactTag plugin configuration tag appending for customer sync.
+- Added custom field freshdesk_api_response under Freshdesk set on Customer entity to log API error or success ("customer synced suceesfully in freshdesk") during CLI command and cron executions.
+- Added public log file freshdesk.log (public/freshdesk.log) for tracking failed customer API sync attempts with Customer ID during CLI command and cron executions.
+

@@ -18,6 +18,7 @@
             <argument type="service" id="customer.repository"/>
             <argument type="service" id="log_entry.repository"/>
             <argument type="service" id="logger"/>
+            <argument>%kernel.project_dir%</argument>
         </service>
 
         <service id="CodeCom\FreshdeskSyncCustomer\Subscriber\CustomerRegistrationSubscriber">

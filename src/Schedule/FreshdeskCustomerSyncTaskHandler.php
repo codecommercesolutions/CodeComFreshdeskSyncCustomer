@@ -36,6 +36,7 @@ class FreshdeskCustomerSyncTaskHandler extends ScheduledTaskHandler
             $context,
             $this->customerSyncService->getCronBatchSize(),
             true,
+            true,
             true
         );
 
