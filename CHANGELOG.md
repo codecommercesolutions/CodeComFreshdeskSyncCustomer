@@ -25,5 +25,9 @@
 # 3.2.3
 - Enabled Freshdesk customfield API response logging and saleschannel-based contactTag appending when manually triggering customer sync via the Administration customer detail panel Sync button.
 
+# 3.2.4
+- Added enableEventLog configuration toggle under API Connection settings to manage system event log entries (log_entry database table).
+
+
 
 

@@ -30,8 +30,12 @@ class FreshdeskService
         $this->logger->info($message, ['plugin' => 'CodeComFreshdeskSyncCustomer']);
     }
 
-    private function logToDatabase(string $requestUrl, array $requestPayload, ResponseInterface $response, Context $context): void
+    private function logToDatabase(string $requestUrl, array $requestPayload, ResponseInterface $response, Context $context, ?string $salesChannelId = null): void
     {
+        if (!$this->systemConfigService->getBool('CodeComFreshdeskSyncCustomer.config.enableEventLog', $salesChannelId)) {
+            return;
+        }
+
         $statusCode = $response->getStatusCode();
         $responseBody = $response->getContent(false);
 
@@ -78,7 +82,7 @@ class FreshdeskService
                 'auth_basic' => [is_string($apiKey) ? $apiKey : '', 'X'],
             ]);
             
-            $this->logToDatabase($url, [], $response, Context::createDefaultContext());
+            $this->logToDatabase($url, [], $response, Context::createDefaultContext(), $salesChannelId);
             
             $data     = $response->toArray(false);
 
@@ -134,7 +138,7 @@ class FreshdeskService
                 'json'       => $data,
             ]);
 
-            $this->logToDatabase($url, $data, $response, Context::createDefaultContext());
+            $this->logToDatabase($url, $data, $response, Context::createDefaultContext(), $salesChannelId);
 
             $statusCode = $response->getStatusCode();
 
@@ -315,7 +319,7 @@ class FreshdeskService
                 'json' => $payload,
             ]);
 
-            $this->logToDatabase($url, $payload, $response, Context::createDefaultContext());
+            $this->logToDatabase($url, $payload, $response, Context::createDefaultContext(), $salesChannelId);
 
             $statusCode = $response->getStatusCode();
             $responseData = $response->toArray(false);

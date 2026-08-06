@@ -25,5 +25,9 @@
 # 3.2.3
 - Protokollierung der API-Antwort im Zusatzfeld freshdesk_api_response und vertriebskanalbasierter contactTag fuer das manuelle Ausloesen der Kundensynchronisierung im Administrationsbereich aktiviert.
 
+# 3.2.4
+- Konfigurationsschalter enableEventLog unter den API-Verbindungseinstellungen hinzugefuegt, um System-Event-Log-Eintraege (Tabelle log_entry) zu verwalten.
+
+
 
 

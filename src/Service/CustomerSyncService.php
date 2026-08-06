@@ -135,18 +135,20 @@ class CustomerSyncService
         $result['optin'] = $optin;
         $result['tags'] = $tags;
 
-        $this->logEntryRepository->create([
-            [
-                'message' => 'Freshdesk Sync Result',
-                'level' => ($result['success'] ?? false) ? Logger::INFO : Logger::WARNING,
-                'channel' => 'Freshdesk Sync',
-                'context' => [
-                    'result' => $result,
-                    'customerId' => $customer->getId(),
-                    'salesChannelId' => $salesChannelId,
+        if ($this->systemConfigService->getBool('CodeComFreshdeskSyncCustomer.config.enableEventLog', $salesChannelId)) {
+            $this->logEntryRepository->create([
+                [
+                    'message' => 'Freshdesk Sync Result',
+                    'level' => ($result['success'] ?? false) ? Logger::INFO : Logger::WARNING,
+                    'channel' => 'Freshdesk Sync',
+                    'context' => [
+                        'result' => $result,
+                        'customerId' => $customer->getId(),
+                        'salesChannelId' => $salesChannelId,
+                    ],
                 ],
-            ],
-        ], $context);
+            ], $context);
+        }
 
         if (!($result['success'] ?? false)) {
             $this->logger->warning('Freshdesk customer sync failed', [

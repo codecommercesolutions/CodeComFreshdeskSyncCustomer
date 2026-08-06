@@ -27,6 +27,15 @@
             <label>API Key</label>
             <label lang="de-DE">API Schlüssel</label>
         </input-field>
+
+        <input-field type="bool">
+            <name>enableEventLog</name>
+            <label>Enable System Event Logging</label>
+            <label lang="de-DE">System-Event-Protokollierung aktivieren</label>
+            <helpText>When enabled, API call details and sync results are written to Shopware System Event Log.</helpText>
+            <helpText lang="de-DE">Wenn aktiviert, werden API-Aufrufe und Sync-Ergebnisse im Shopware System-Event-Log gespeichert.</helpText>
+            <defaultValue>false</defaultValue>
+        </input-field>
     </card>
 
     <card>
