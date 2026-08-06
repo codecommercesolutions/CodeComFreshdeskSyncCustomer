@@ -22,4 +22,8 @@
 # 3.2.2
 - Neuer CLI-Befehl codecom:freshdesk:reset-sync-status hinzugefuegt, um alle Kunden-Sync-Status-Flags zurueckzusetzen und die Datei public/freshdesk.log zu leeren.
 
+# 3.2.3
+- Protokollierung der API-Antwort im Zusatzfeld freshdesk_api_response und vertriebskanalbasierter contactTag fuer das manuelle Ausloesen der Kundensynchronisierung im Administrationsbereich aktiviert.
+
+
 

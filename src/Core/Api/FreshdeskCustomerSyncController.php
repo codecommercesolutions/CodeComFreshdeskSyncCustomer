@@ -32,7 +32,7 @@ class FreshdeskCustomerSyncController
             $optin = (bool) $payload['optin'];
         }
 
-        $result = $this->customerSyncService->syncCustomerById($customerId, $context, $optin);
+        $result = $this->customerSyncService->syncCustomerById($customerId, $context, $optin, true, true);
 
         return new JsonResponse($result, ($result['success'] ?? false) ? 200 : 400);
     }

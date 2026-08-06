@@ -22,4 +22,8 @@
 # 3.2.2
 - Added codecom:freshdesk:reset-sync-status CLI command to reset all customer sync status flags and clear public/freshdesk.log file.
 
+# 3.2.3
+- Enabled Freshdesk customfield API response logging and saleschannel-based contactTag appending when manually triggering customer sync via the Administration customer detail panel Sync button.
+
+
 
