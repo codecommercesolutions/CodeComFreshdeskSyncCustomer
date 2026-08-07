@@ -57,14 +57,29 @@ class SyncCustomersCommand extends Command
         $limitOption = $input->getOption('limit');
         $limit = is_numeric($limitOption) ? (int) $limitOption : $this->customerSyncService->getCliBatchSize();
 
+        $outputCallback = function (int $index, string $customerId, string $email, array $result) use ($io): void {
+            $statusStr = match (true) {
+                ($result['skipped'] ?? false) === true => 'skipped (' . ($result['message'] ?? '') . ')',
+                ($result['success'] ?? false) === true => 'successfully synced',
+                default => 'failed (' . ($result['message'] ?? 'error') . ')',
+            };
+            $io->writeln(sprintf('%d) Customer ID %s (%s) - %s', $index, $customerId, $email, $statusStr));
+        };
+
         $summary = $this->customerSyncService->syncCustomerBatch(
             $context,
             $limit,
             (bool) $input->getOption('only-unprocessed'),
             (bool) $input->getOption('mark-processed'),
-            true
+            true,
+            $outputCallback
         );
 
+        if ((bool) $input->getOption('mark-processed')) {
+            $this->customerSyncService->updateCronStatus($summary);
+        }
+
+        $io->newLine();
         $io->success(sprintf(
             'Processed %d customers: %d synced, %d skipped, %d failed, %d remaining.',
             $summary['processed'],

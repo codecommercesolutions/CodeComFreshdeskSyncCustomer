@@ -211,8 +211,14 @@ class CustomerSyncService
     /**
      * @return array{processed: int, synced: int, skipped: int, failed: int, remaining: int, results: list<array<string, mixed>>}
      */
-    public function syncCustomerBatch(Context $context, int $limit = 50, bool $onlyUnprocessed = false, bool $markProcessed = false, bool $isBatchOrCron = true): array
-    {
+    public function syncCustomerBatch(
+        Context $context,
+        int $limit = 50,
+        bool $onlyUnprocessed = false,
+        bool $markProcessed = false,
+        bool $isBatchOrCron = true,
+        ?callable $onCustomerProcessed = null
+    ): array {
         $limit = max(1, $limit);
         $criteria = $this->createCustomerCriteria();
         $criteria->setLimit($limit);
@@ -233,11 +239,13 @@ class CustomerSyncService
             'results' => [],
         ];
 
+        $index = 0;
         foreach ($customers as $customer) {
             if (!$customer instanceof CustomerEntity) {
                 continue;
             }
 
+            $index++;
             $result = $this->syncCustomer($customer, $context, $markProcessed, $isBatchOrCron);
             $summary['processed']++;
             $summary['results'][] = [
@@ -245,6 +253,10 @@ class CustomerSyncService
                 'email' => $customer->getEmail(),
                 'result' => $result,
             ];
+
+            if ($onCustomerProcessed !== null) {
+                $onCustomerProcessed($index, $customer->getId(), (string) $customer->getEmail(), $result);
+            }
 
             if (!($result['success'] ?? false)) {
                 $summary['failed']++;

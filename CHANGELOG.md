@@ -46,6 +46,10 @@
 # 3.3.0
 - Enhanced Freshdesk duplicate contact handling with fallback email search when Freshdesk API returns validation errors containing unique value messages.
 
+# 3.3.1
+- Updated CLI sync command to output formatted real-time customer progress lines (1) Customer ID xx (email) - status) and persist sync counters to plugin configuration when run with --mark-processed.
+
+
 
 
 

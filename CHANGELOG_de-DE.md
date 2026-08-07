@@ -46,6 +46,10 @@
 # 3.3.0
 - Erweiterte Freshdesk-Duplikatkontakthandhabung mit Fallback-E-Mail-Suche.
 
+# 3.3.1
+- CLI-Synchronisierungsbefehl aktualisiert, um formatierte Echtzeit-Fortschrittszeilen auszugeben und Sync-Zaehler zu speichern.
+
+
 
 
 
