@@ -49,6 +49,10 @@
 # 3.3.1
 - CLI-Synchronisierungsbefehl aktualisiert, um formatierte Echtzeit-Fortschrittszeilen auszugeben und Sync-Zaehler zu speichern.
 
+# 3.3.2
+- Echtzeit-Zaehleraktualisierungen in der Schleife und dynamische Verbleibend-Berechnung implementiert.
+
+
 
 
 

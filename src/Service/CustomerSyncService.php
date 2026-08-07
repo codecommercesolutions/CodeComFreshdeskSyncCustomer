@@ -254,27 +254,36 @@ class CustomerSyncService
                 'result' => $result,
             ];
 
+            if (!($result['success'] ?? false)) {
+                $summary['failed']++;
+            } elseif (($result['skipped'] ?? false) === true) {
+                $summary['skipped']++;
+            } else {
+                $summary['synced']++;
+            }
+
+            if ($markProcessed) {
+                $this->incrementConfigInt('totalCustomerSyncProcessedCount', 1);
+                if (!($result['success'] ?? false)) {
+                    $this->incrementConfigInt('totalCustomerSyncFailedCount', 1);
+                } elseif (($result['skipped'] ?? false) === true) {
+                    $this->incrementConfigInt('totalCustomerSyncSkippedCount', 1);
+                } else {
+                    $this->incrementConfigInt('totalCustomerSyncSyncedCount', 1);
+                }
+            }
+
             if ($onCustomerProcessed !== null) {
                 $onCustomerProcessed($index, $customer->getId(), (string) $customer->getEmail(), $result);
             }
-
-            if (!($result['success'] ?? false)) {
-                $summary['failed']++;
-                continue;
-            }
-
-            if (($result['skipped'] ?? false) === true) {
-                $summary['skipped']++;
-                continue;
-            }
-
-            $summary['synced']++;
         }
 
-        if ($onlyUnprocessed) {
-            $remainingCriteria = new Criteria();
-            $remainingCriteria->addFilter(new EqualsFilter('customFields.' . self::PROCESSED_AT_CUSTOM_FIELD, null));
-            $summary['remaining'] = $this->customerRepository->searchIds($remainingCriteria, $context)->getTotal();
+        $remainingCriteria = new Criteria();
+        $remainingCriteria->addFilter(new EqualsFilter('customFields.' . self::PROCESSED_AT_CUSTOM_FIELD, null));
+        $summary['remaining'] = $this->customerRepository->searchIds($remainingCriteria, $context)->getTotal();
+
+        if ($markProcessed) {
+            $this->updateCronStatus($summary);
         }
 
         return $summary;
@@ -299,10 +308,6 @@ class CustomerSyncService
         $this->systemConfigService->set('CodeComFreshdeskSyncCustomer.config.lastCustomerSyncSkippedCount', $summary['skipped']);
         $this->systemConfigService->set('CodeComFreshdeskSyncCustomer.config.lastCustomerSyncFailedCount', $summary['failed']);
         $this->systemConfigService->set('CodeComFreshdeskSyncCustomer.config.remainingCustomerSyncCount', $summary['remaining']);
-        $this->incrementConfigInt('totalCustomerSyncProcessedCount', $summary['processed']);
-        $this->incrementConfigInt('totalCustomerSyncSyncedCount', $summary['synced']);
-        $this->incrementConfigInt('totalCustomerSyncSkippedCount', $summary['skipped']);
-        $this->incrementConfigInt('totalCustomerSyncFailedCount', $summary['failed']);
 
         if ($status === 'completed') {
             $this->systemConfigService->set('CodeComFreshdeskSyncCustomer.config.lastSuccessfulCustomerSyncAt', $now);

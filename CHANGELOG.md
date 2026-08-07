@@ -49,6 +49,10 @@
 # 3.3.1
 - Updated CLI sync command to output formatted real-time customer progress lines (1) Customer ID xx (email) - status) and persist sync counters to plugin configuration when run with --mark-processed.
 
+# 3.3.2
+- Implemented real-time in-loop configuration counter updates and dynamic database remaining count calculation during customer batch processing.
+
+
 
 
 
