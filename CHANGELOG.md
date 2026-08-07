@@ -28,6 +28,10 @@
 # 3.2.4
 - Added enableEventLog configuration toggle under API Connection settings to manage system event log entries (log_entry database table).
 
+# 3.2.5
+- Updated markProcessed handling to set processed_at timestamp for all processed customers (including failed attempts) during batch syncs, ensuring subsequent --only-unprocessed runs advance to next customer batches without getting stuck on failed records.
+
+
 
 
 

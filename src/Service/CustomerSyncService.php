@@ -330,13 +330,18 @@ class CustomerSyncService
     private function finish(CustomerEntity $customer, Context $context, array $result, bool $markProcessed, bool $isBatchOrCron = false): array
     {
         $fields = [];
-        if ($markProcessed && (($result['success'] ?? false) === true)) {
+        if ($markProcessed) {
             $now = (new \DateTimeImmutable())->format('Y-m-d H:i:s');
             $fields[self::PROCESSED_AT_CUSTOM_FIELD] = $now;
-            $fields[self::LAST_RESULT_CUSTOM_FIELD] = ($result['skipped'] ?? false) ? 'skipped' : 'synced';
 
-            if (($result['skipped'] ?? false) !== true) {
-                $fields[self::SYNCED_AT_CUSTOM_FIELD] = $now;
+            if (($result['success'] ?? false) === true) {
+                $fields[self::LAST_RESULT_CUSTOM_FIELD] = ($result['skipped'] ?? false) ? 'skipped' : 'synced';
+
+                if (($result['skipped'] ?? false) !== true) {
+                    $fields[self::SYNCED_AT_CUSTOM_FIELD] = $now;
+                }
+            } else {
+                $fields[self::LAST_RESULT_CUSTOM_FIELD] = 'failed';
             }
         }
 

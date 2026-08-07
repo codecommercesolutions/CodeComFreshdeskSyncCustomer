@@ -28,6 +28,10 @@
 # 3.2.4
 - Konfigurationsschalter enableEventLog unter den API-Verbindungseinstellungen hinzugefuegt, um System-Event-Log-Eintraege (Tabelle log_entry) zu verwalten.
 
+# 3.2.5
+- Handhabung von markProcessed aktualisiert, um den Zeitstempel processed_at fuer alle verarbeiteten Kunden (einschliesslich fehlgeschlagener Versuche) bei Batch-Synchronisierungen zu setzen.
+
+
 
 
 
