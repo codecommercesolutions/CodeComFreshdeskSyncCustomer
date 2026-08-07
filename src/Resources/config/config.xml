@@ -276,4 +276,13 @@
         </input-field>
     </card>
 
+    <card>
+        <title>Reset Sync Status</title>
+        <title lang="de-DE">Sync-Status zurücksetzen</title>
+
+        <component name="codecom-freshdesk-sync-reset-button">
+            <name>codecomFreshdeskSyncResetButton</name>
+        </component>
+    </card>
+
 </config>

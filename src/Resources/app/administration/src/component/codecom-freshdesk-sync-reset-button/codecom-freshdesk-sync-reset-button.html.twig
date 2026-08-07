@@ -1,0 +1,11 @@
+<div class="codecom-freshdesk-sync-reset-button" style="margin-bottom: 20px;">
+    <sw-button-process
+        variant="ghost-danger"
+        :isLoading="isLoading"
+        :processSuccess="isSuccess"
+        @process-finish="onProcessFinish"
+        @click="onResetStatus"
+    >
+        Reset Customer Sync Status &amp; Logs
+    </sw-button-process>
+</div>

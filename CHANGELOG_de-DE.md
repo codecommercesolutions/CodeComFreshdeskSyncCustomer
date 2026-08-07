@@ -34,6 +34,14 @@
 # 3.2.6
 - Automatische Extraktion von user_id und erneuter Kontaktaktualisierungsversuch hinzugefuegt, wenn die Freshdesk-API den Validierungsfehler HTTP 400 duplicate_value zurueckgibt.
 
+# 3.2.7
+- Befehl reset-sync-status aktualisiert, um auch alle kumulativen Gesamtzaehler in der Plugin-Konfiguration auf 0 zurueckzusetzen.
+
+# 3.2.8
+- Schaltflaechenkomponente und API-Aktions-Endpunkt zum Zuruecksetzen des Sync-Status in der Erweiterungskonfiguration hinzugefuegt.
+
+
+
 
 
 

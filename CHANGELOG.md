@@ -34,6 +34,14 @@
 # 3.2.6
 - Added automatic user_id extraction and contact update retry when Freshdesk API returns HTTP 400 duplicate_value validation error.
 
+# 3.2.7
+- Updated reset-sync-status command to also reset all cumulative total sync counters (totalCustomerSyncProcessedCount, totalCustomerSyncSyncedCount, totalCustomerSyncSkippedCount, totalCustomerSyncFailedCount) in plugin configuration to 0.
+
+# 3.2.8
+- Added administration extension configuration Reset Sync Status button component and API action endpoint to allow resetting customer sync status, counters, and logs directly from the plugin settings page.
+
+
+
 
 
 

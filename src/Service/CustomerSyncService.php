@@ -76,6 +76,10 @@ class CustomerSyncService
         $this->systemConfigService->set('CodeComFreshdeskSyncCustomer.config.lastCustomerSyncSkippedCount', 0);
         $this->systemConfigService->set('CodeComFreshdeskSyncCustomer.config.lastCustomerSyncFailedCount', 0);
         $this->systemConfigService->set('CodeComFreshdeskSyncCustomer.config.remainingCustomerSyncCount', 0);
+        $this->systemConfigService->set('CodeComFreshdeskSyncCustomer.config.totalCustomerSyncProcessedCount', 0);
+        $this->systemConfigService->set('CodeComFreshdeskSyncCustomer.config.totalCustomerSyncSyncedCount', 0);
+        $this->systemConfigService->set('CodeComFreshdeskSyncCustomer.config.totalCustomerSyncSkippedCount', 0);
+        $this->systemConfigService->set('CodeComFreshdeskSyncCustomer.config.totalCustomerSyncFailedCount', 0);
 
         return [
             'affectedCustomers' => $affectedRows,
