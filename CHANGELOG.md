@@ -43,6 +43,10 @@
 # 3.2.9
 - Fixed Symfony route order and path for resetStatus controller endpoint to prevent UUID route conflict error.
 
+# 3.3.0
+- Enhanced Freshdesk duplicate contact handling with fallback email search when Freshdesk API returns validation errors containing unique value messages.
+
+
 
 
 

@@ -43,6 +43,10 @@
 # 3.2.9
 - Korrektur der Symfony-Routenreihenfolge und des Pfads fuer den Controller-Endpunkt resetStatus zur Vermeidung von UUID-Routenkonfliktfehlern.
 
+# 3.3.0
+- Erweiterte Freshdesk-Duplikatkontakthandhabung mit Fallback-E-Mail-Suche.
+
+
 
 
 

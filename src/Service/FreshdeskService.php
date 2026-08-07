@@ -336,15 +336,26 @@ class FreshdeskService
             }
 
             $duplicateContactId = null;
-            if ($statusCode === 409) {
-                $existingContact = $this->findContactByEmail($email, $salesChannelId);
-                $duplicateContactId = isset($existingContact['id']) ? (int) $existingContact['id'] : null;
-            } elseif (is_array($responseData['errors'] ?? null)) {
+            $isDuplicate = ($statusCode === 409);
+
+            if (is_array($responseData['errors'] ?? null)) {
                 foreach ($responseData['errors'] as $err) {
-                    if (($err['code'] ?? '') === 'duplicate_value' && !empty($err['additional_info']['user_id'])) {
-                        $duplicateContactId = (int) $err['additional_info']['user_id'];
-                        break;
+                    $code = strtolower((string) ($err['code'] ?? ''));
+                    $msg = strtolower((string) ($err['message'] ?? ''));
+                    if ($code === 'duplicate_value' || str_contains($msg, 'unique value') || str_contains($msg, 'already exists')) {
+                        $isDuplicate = true;
+                        if (isset($err['additional_info']['user_id']) && (int) $err['additional_info']['user_id'] > 0) {
+                            $duplicateContactId = (int) $err['additional_info']['user_id'];
+                            break;
+                        }
                     }
+                }
+            }
+
+            if ($isDuplicate && ($duplicateContactId === null || $duplicateContactId <= 0)) {
+                $existingContact = $this->findContactByEmail($email, $salesChannelId);
+                if ($existingContact !== null && !empty($existingContact['id'])) {
+                    $duplicateContactId = (int) $existingContact['id'];
                 }
             }
 
