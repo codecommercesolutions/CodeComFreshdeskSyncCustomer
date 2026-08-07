@@ -40,6 +40,10 @@
 # 3.2.8
 - Added administration extension configuration Reset Sync Status button component and API action endpoint to allow resetting customer sync status, counters, and logs directly from the plugin settings page.
 
+# 3.2.9
+- Fixed Symfony route order and path for resetStatus controller endpoint to prevent UUID route conflict error.
+
+
 
 
 

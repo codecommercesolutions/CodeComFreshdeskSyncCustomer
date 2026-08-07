@@ -19,6 +19,26 @@ class FreshdeskCustomerSyncController
     }
 
     #[Route(
+        path: '/api/_action/codecom-freshdesk-sync-customer-reset-status',
+        name: 'api.action.codecom_freshdesk_sync_customer.reset_status',
+        methods: ['POST']
+    )]
+    public function resetStatus(Context $context): JsonResponse
+    {
+        $result = $this->customerSyncService->resetSyncStatus();
+
+        return new JsonResponse([
+            'success' => true,
+            'message' => sprintf(
+                'Reset sync status for %d customer(s). %s',
+                $result['affectedCustomers'],
+                $result['logCleared'] ? 'Cleared public/freshdesk.log file.' : ''
+            ),
+            'data' => $result,
+        ]);
+    }
+
+    #[Route(
         path: '/api/_action/codecom-freshdesk-sync-customer/{customerId}',
         name: 'api.action.codecom_freshdesk_sync_customer.sync',
         methods: ['POST']
@@ -52,25 +72,5 @@ class FreshdeskCustomerSyncController
         $result = $this->customerSyncService->updateCustomerOptin($customerId, $optin, $context);
 
         return new JsonResponse($result, ($result['success'] ?? false) ? 200 : 400);
-    }
-
-    #[Route(
-        path: '/api/_action/codecom-freshdesk-sync-customer/reset-status',
-        name: 'api.action.codecom_freshdesk_sync_customer.reset_status',
-        methods: ['POST']
-    )]
-    public function resetStatus(Context $context): JsonResponse
-    {
-        $result = $this->customerSyncService->resetSyncStatus();
-
-        return new JsonResponse([
-            'success' => true,
-            'message' => sprintf(
-                'Reset sync status for %d customer(s). %s',
-                $result['affectedCustomers'],
-                $result['logCleared'] ? 'Cleared public/freshdesk.log file.' : ''
-            ),
-            'data' => $result,
-        ]);
     }
 }

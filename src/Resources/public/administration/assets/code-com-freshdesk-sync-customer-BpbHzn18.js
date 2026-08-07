@@ -28,7 +28,7 @@ Shopware.Component.register('codecom-freshdesk-sync-reset-button', {
             this.isLoading = true;
             try {
                 const response = await Shopware.Application.getContainer('init').httpClient.post(
-                    '_action/codecom-freshdesk-sync-customer/reset-status',
+                    '_action/codecom-freshdesk-sync-customer-reset-status',
                     {},
                     { headers: this.freshdeskHeaders() }
                 );

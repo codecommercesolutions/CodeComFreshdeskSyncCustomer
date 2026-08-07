@@ -40,6 +40,10 @@
 # 3.2.8
 - Schaltflaechenkomponente und API-Aktions-Endpunkt zum Zuruecksetzen des Sync-Status in der Erweiterungskonfiguration hinzugefuegt.
 
+# 3.2.9
+- Korrektur der Symfony-Routenreihenfolge und des Pfads fuer den Controller-Endpunkt resetStatus zur Vermeidung von UUID-Routenkonfliktfehlern.
+
+
 
 
 
