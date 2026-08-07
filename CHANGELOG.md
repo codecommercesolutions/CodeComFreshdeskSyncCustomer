@@ -31,6 +31,10 @@
 # 3.2.5
 - Updated markProcessed handling to set processed_at timestamp for all processed customers (including failed attempts) during batch syncs, ensuring subsequent --only-unprocessed runs advance to next customer batches without getting stuck on failed records.
 
+# 3.2.6
+- Added automatic user_id extraction and contact update retry when Freshdesk API returns HTTP 400 duplicate_value validation error.
+
+
 
 
 

@@ -335,58 +335,51 @@ class FreshdeskService
                 ];
             }
 
+            $duplicateContactId = null;
             if ($statusCode === 409) {
-                $this->log("createOrUpdateRegistrationContact() HTTP 409 | retrying as update for email={$email}");
                 $existingContact = $this->findContactByEmail($email, $salesChannelId);
-
-                if ($existingContact !== null && !empty($existingContact['id'])) {
-                    $updateData = [];
-
-                    if (!empty($name)) {
-                        $updateData['name'] = $name;
+                $duplicateContactId = isset($existingContact['id']) ? (int) $existingContact['id'] : null;
+            } elseif (is_array($responseData['errors'] ?? null)) {
+                foreach ($responseData['errors'] as $err) {
+                    if (($err['code'] ?? '') === 'duplicate_value' && !empty($err['additional_info']['user_id'])) {
+                        $duplicateContactId = (int) $err['additional_info']['user_id'];
+                        break;
                     }
-
-                    if (!empty($phone)) {
-                        $updateData['phone'] = $phone;
-                    }
-
-                    if (!empty($address)) {
-                        $updateData['address'] = $address;
-                    }
-
-                    $updateData['language'] = $language;
-
-                    if ($optinCustomField !== null) {
-                        $updateData['custom_fields'] = [$optinCustomField => $this->formatOptinValue($optin, $salesChannelId)];
-                    }
-
-                    $existingTags = $existingContact['tags'] ?? [];
-                    if (!is_array($existingTags)) {
-                        $existingTags = [];
-                    }
-                    $mergedTags = array_values(array_unique(array_merge($existingTags, $tags)));
-                    if ($mergedTags !== $existingTags) {
-                        $updateData['tags'] = $mergedTags;
-                    }
-
-                    if ($updateData !== []) {
-                        $updateResult = $this->updateFreshdeskContact((int) $existingContact['id'], $updateData, $salesChannelId);
-
-                        return [
-                            'success' => $updateResult['success'],
-                            'id' => (int) $existingContact['id'],
-                            'created' => false,
-                            'message' => $updateResult['message'] ?? 'Existing contact updated after duplicate response',
-                        ];
-                    }
-
-                    return [
-                        'success' => true,
-                        'id' => (int) $existingContact['id'],
-                        'created' => false,
-                        'message' => 'Contact already exists',
-                    ];
                 }
+            }
+
+            if ($duplicateContactId !== null && $duplicateContactId > 0) {
+                $this->log("createOrUpdateRegistrationContact() duplicate contact detected | id={$duplicateContactId} | retrying update");
+                $updateData = [];
+
+                if (!empty($name)) {
+                    $updateData['name'] = $name;
+                }
+
+                if (!empty($phone)) {
+                    $updateData['phone'] = $phone;
+                }
+
+                if (!empty($address)) {
+                    $updateData['address'] = $address;
+                }
+
+                $updateData['language'] = $language;
+
+                if ($optinCustomField !== null) {
+                    $updateData['custom_fields'] = [$optinCustomField => $this->formatOptinValue($optin, $salesChannelId)];
+                }
+
+                $updateData['tags'] = $tags;
+
+                $updateResult = $this->updateFreshdeskContact($duplicateContactId, $updateData, $salesChannelId);
+
+                return [
+                    'success' => $updateResult['success'],
+                    'id' => $duplicateContactId,
+                    'created' => false,
+                    'message' => $updateResult['message'] ?? 'Existing contact updated after duplicate response',
+                ];
             }
 
             return [

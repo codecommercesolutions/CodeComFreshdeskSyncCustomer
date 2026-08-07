@@ -31,6 +31,10 @@
 # 3.2.5
 - Handhabung von markProcessed aktualisiert, um den Zeitstempel processed_at fuer alle verarbeiteten Kunden (einschliesslich fehlgeschlagener Versuche) bei Batch-Synchronisierungen zu setzen.
 
+# 3.2.6
+- Automatische Extraktion von user_id und erneuter Kontaktaktualisierungsversuch hinzugefuegt, wenn die Freshdesk-API den Validierungsfehler HTTP 400 duplicate_value zurueckgibt.
+
+
 
 
 
