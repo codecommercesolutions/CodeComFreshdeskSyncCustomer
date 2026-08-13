@@ -465,6 +465,17 @@ class CustomerSyncService
             $countryName = $country->getTranslated()['name'] ?? $country->getName() ?? '';
             $countryNameLower = mb_strtolower(trim((string) $countryName));
 
+            // 1. Search across ALL Sales Channels' chWebshopCountries config in DB to find matching Sales Channel ID
+            $matchingSalesChannelId = $this->findMatchingSalesChannelIdForCountry($countryId);
+            if ($matchingSalesChannelId !== null) {
+                $matchedTag = trim($this->systemConfigService->getString('CodeComFreshdeskSyncCustomer.config.contactTag', $matchingSalesChannelId));
+                if ($matchedTag !== '') {
+                    return $matchedTag;
+                }
+                return 'Webshop-CH';
+            }
+
+            // 2. Default CH / LI matching if no explicit country config was matched in DB
             $chLiKeywords = [
                 'switzerland',
                 'schweiz',
@@ -475,17 +486,8 @@ class CustomerSyncService
                 'lichtenstein',
             ];
 
-            $isChCountry = false;
-
-            // Check if country matches current sales channel's chWebshopCountries config
-            $configuredCountryIds = $this->systemConfigService->get('CodeComFreshdeskSyncCustomer.config.chWebshopCountries', $salesChannelId);
-            if (is_array($configuredCountryIds) && $configuredCountryIds !== []) {
-                if (in_array($countryId, $configuredCountryIds, true)) {
-                    $isChCountry = true;
-                }
-            } elseif ($iso === 'CH' || $iso === 'LI') {
-                $isChCountry = true;
-            } else {
+            $isChCountry = ($iso === 'CH' || $iso === 'LI');
+            if (!$isChCountry) {
                 foreach ($chLiKeywords as $keyword) {
                     if ($countryNameLower === $keyword || str_contains($countryNameLower, $keyword)) {
                         $isChCountry = true;
@@ -494,36 +496,57 @@ class CustomerSyncService
                 }
             }
 
-            // If not matched on current sales channel config, check globally across all sales channels
-            if (!$isChCountry) {
-                $allConfiguredCountryIds = $this->systemConfigService->get('CodeComFreshdeskSyncCustomer.config.chWebshopCountries');
-                if (is_array($allConfiguredCountryIds) && in_array($countryId, $allConfiguredCountryIds, true)) {
-                    $isChCountry = true;
-                }
-            }
-
             if ($isChCountry) {
                 $chConfigTag = trim($this->systemConfigService->getString('CodeComFreshdeskSyncCustomer.config.contactTag', $salesChannelId));
                 if ($chConfigTag !== '') {
                     return $chConfigTag;
                 }
-
-                $globalChConfigTag = trim($this->systemConfigService->getString('CodeComFreshdeskSyncCustomer.config.contactTag'));
-                if ($globalChConfigTag !== '') {
-                    return $globalChConfigTag;
-                }
-
                 return 'Webshop-CH';
             }
         }
 
-        // If country does not match CH list, get the contactTag for the customer's SalesChannel
+        // 3. If country does not match any CH list, get the contactTag for the customer's assigned SalesChannel
         $configTag = trim($this->systemConfigService->getString('CodeComFreshdeskSyncCustomer.config.contactTag', $salesChannelId));
         if ($configTag !== '') {
             return $configTag;
         }
 
         return 'Webshop-EU';
+    }
+
+    private function findMatchingSalesChannelIdForCountry(string $countryId): ?string
+    {
+        if ($this->connection === null) {
+            return null;
+        }
+
+        try {
+            $rows = $this->connection->fetchAllAssociative("
+                SELECT `sales_channel_id`, `configuration_value`
+                FROM `system_config`
+                WHERE `configuration_key` = 'CodeComFreshdeskSyncCustomer.config.chWebshopCountries'
+            ");
+
+            foreach ($rows as $row) {
+                $rawVal = $row['configuration_value'] ?? null;
+                if (!is_string($rawVal) || $rawVal === '') {
+                    continue;
+                }
+
+                $decoded = json_decode($rawVal, true);
+                $countryIds = is_array($decoded) && isset($decoded['_value']) && is_array($decoded['_value'])
+                    ? $decoded['_value']
+                    : (is_array($decoded) ? $decoded : []);
+
+                if (in_array($countryId, $countryIds, true)) {
+                    return $row['sales_channel_id'] !== null ? (string) $row['sales_channel_id'] : null;
+                }
+            }
+        } catch (\Throwable $e) {
+            $this->logger->error('Failed searching chWebshopCountries in system_config: ' . $e->getMessage());
+        }
+
+        return null;
     }
 
 
