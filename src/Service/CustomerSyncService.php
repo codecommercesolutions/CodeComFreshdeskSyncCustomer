@@ -492,6 +492,11 @@ class CustomerSyncService
             }
         }
 
+        $configTag = trim($this->systemConfigService->getString('CodeComFreshdeskSyncCustomer.config.contactTag', $salesChannelId));
+        if ($configTag !== '') {
+            return $configTag;
+        }
+
         return 'Webshop-EU';
     }
 
