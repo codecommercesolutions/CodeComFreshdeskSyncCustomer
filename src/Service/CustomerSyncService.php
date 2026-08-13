@@ -448,18 +448,23 @@ class CustomerSyncService
             }
         }
 
-        $regionalTag = $this->determineRegionalWebshopTag($customer);
+        $regionalTag = $this->determineRegionalWebshopTag($customer, $salesChannelId);
         $tagNames[] = $regionalTag;
 
         return array_values(array_unique($tagNames));
     }
 
-    private function determineRegionalWebshopTag(CustomerEntity $customer): string
+    private function determineRegionalWebshopTag(CustomerEntity $customer, string $salesChannelId): string
     {
         $address = $customer->getDefaultBillingAddress();
         $country = $address?->getCountry();
 
         if ($country !== null) {
+            $configuredCountryIds = $this->systemConfigService->get('CodeComFreshdeskSyncCustomer.config.chWebshopCountries', $salesChannelId);
+            if (is_array($configuredCountryIds) && $configuredCountryIds !== []) {
+                return in_array($country->getId(), $configuredCountryIds, true) ? 'Webshop-CH' : 'Webshop-EU';
+            }
+
             $iso = strtoupper(trim((string) $country->getIso()));
             if ($iso === 'CH' || $iso === 'LI') {
                 return 'Webshop-CH';

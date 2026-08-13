@@ -55,6 +55,9 @@
 # 3.3.3
 - Dynamische laenderbasierte Freshdesk-Tag-Zuweisung hinzugefuegt: Rechnungsadressen aus der Schweiz (CH) und Liechtenstein (LI) erhalten das Tag "Webshop-CH", alle anderen Laender "Webshop-EU".
 
+# 3.3.4
+- Konfigurierbare Mehrfachauswahl-Einstellung fuer Länder für Webshop-CH Tag (chWebshopCountries) in der Plugin-Administration hinzugefuegt, mit Fallback auf die Standardpruefung von Schweiz und Liechtenstein.
+
 
 
 

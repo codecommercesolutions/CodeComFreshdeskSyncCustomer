@@ -118,6 +118,15 @@
             <helpText lang="de-DE">Optionales eigenes Label neben der Marketing-Einwilligungs-Checkbox. Leer lassen, um das Storefront-Snippet freshdesk.registration.syncConsentLabel zu verwenden.</helpText>
             <placeholder>I’d like to receive occasional updates, offers, and news from by email</placeholder>
         </input-field>
+
+        <component name="sw-entity-multi-id-select">
+            <name>chWebshopCountries</name>
+            <entity>country</entity>
+            <label>Countries for Webshop-CH Tag</label>
+            <label lang="de-DE">Länder für Webshop-CH Tag</label>
+            <helpText>Select countries that should receive the Webshop-CH tag in Freshdesk. All other countries will receive Webshop-EU. If left empty, Switzerland and Liechtenstein are used by default.</helpText>
+            <helpText lang="de-DE">Wählen Sie die Länder aus, die in Freshdesk mit dem Tag Webshop-CH versehen werden sollen. Alle anderen Länder erhalten Webshop-EU. Wenn leer gelassen, werden standardmäßig die Schweiz und Liechtenstein verwendet.</helpText>
+        </component>
     </card>
 
     <card>

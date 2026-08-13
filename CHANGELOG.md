@@ -55,6 +55,9 @@
 # 3.3.3
 - Added dynamic country-based Freshdesk tag assignment: invoice addresses from Switzerland (CH) and Liechtenstein (LI) are tagged with "Webshop-CH", and all other countries with "Webshop-EU".
 
+# 3.3.4
+- Added configurable Countries for Webshop-CH Tag multiselect configuration setting (chWebshopCountries) in plugin administration settings with fallback to default Switzerland and Liechtenstein country matching.
+
 
 
 
