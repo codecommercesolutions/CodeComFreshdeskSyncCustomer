@@ -456,51 +456,74 @@ class CustomerSyncService
 
     private function determineRegionalWebshopTag(CustomerEntity $customer, string $salesChannelId): string
     {
-        $configTag = trim($this->systemConfigService->getString('CodeComFreshdeskSyncCustomer.config.contactTag', $salesChannelId));
-        $chTag = $configTag !== '' ? $configTag : 'Webshop-CH';
-
         $address = $customer->getDefaultBillingAddress();
         $country = $address?->getCountry();
 
-        // 1. Check if customer's country matches CH / configured CH countries
         if ($country !== null) {
+            $countryId = $country->getId();
+            $iso = strtoupper(trim((string) $country->getIso()));
+            $countryName = $country->getTranslated()['name'] ?? $country->getName() ?? '';
+            $countryNameLower = mb_strtolower(trim((string) $countryName));
+
+            $chLiKeywords = [
+                'switzerland',
+                'schweiz',
+                'suisse',
+                'svizzera',
+                'switserland',
+                'liechtenstein',
+                'lichtenstein',
+            ];
+
+            $isChCountry = false;
+
+            // Check if country matches current sales channel's chWebshopCountries config
             $configuredCountryIds = $this->systemConfigService->get('CodeComFreshdeskSyncCustomer.config.chWebshopCountries', $salesChannelId);
-
             if (is_array($configuredCountryIds) && $configuredCountryIds !== []) {
-                if (in_array($country->getId(), $configuredCountryIds, true)) {
-                    return $chTag;
+                if (in_array($countryId, $configuredCountryIds, true)) {
+                    $isChCountry = true;
                 }
+            } elseif ($iso === 'CH' || $iso === 'LI') {
+                $isChCountry = true;
             } else {
-                $iso = strtoupper(trim((string) $country->getIso()));
-                if ($iso === 'CH' || $iso === 'LI') {
-                    return $chTag;
-                }
-
-                $countryName = $country->getTranslated()['name']
-                    ?? $country->getName()
-                    ?? '';
-                $countryNameLower = mb_strtolower(trim((string) $countryName));
-
-                $chLiKeywords = [
-                    'switzerland',
-                    'schweiz',
-                    'suisse',
-                    'svizzera',
-                    'switserland',
-                    'liechtenstein',
-                    'lichtenstein',
-                ];
-
                 foreach ($chLiKeywords as $keyword) {
                     if ($countryNameLower === $keyword || str_contains($countryNameLower, $keyword)) {
-                        return $chTag;
+                        $isChCountry = true;
+                        break;
                     }
                 }
             }
+
+            // If not matched on current sales channel config, check globally across all sales channels
+            if (!$isChCountry) {
+                $allConfiguredCountryIds = $this->systemConfigService->get('CodeComFreshdeskSyncCustomer.config.chWebshopCountries');
+                if (is_array($allConfiguredCountryIds) && in_array($countryId, $allConfiguredCountryIds, true)) {
+                    $isChCountry = true;
+                }
+            }
+
+            if ($isChCountry) {
+                $chConfigTag = trim($this->systemConfigService->getString('CodeComFreshdeskSyncCustomer.config.contactTag', $salesChannelId));
+                if ($chConfigTag !== '') {
+                    return $chConfigTag;
+                }
+
+                $globalChConfigTag = trim($this->systemConfigService->getString('CodeComFreshdeskSyncCustomer.config.contactTag'));
+                if ($globalChConfigTag !== '') {
+                    return $globalChConfigTag;
+                }
+
+                return 'Webshop-CH';
+            }
         }
 
-        // 2. All non-CH countries (or missing country) receive configured tag or fallback Webshop-EU
-        return $configTag !== '' ? $configTag : 'Webshop-EU';
+        // If country does not match CH list, get the contactTag for the customer's SalesChannel
+        $configTag = trim($this->systemConfigService->getString('CodeComFreshdeskSyncCustomer.config.contactTag', $salesChannelId));
+        if ($configTag !== '') {
+            return $configTag;
+        }
+
+        return 'Webshop-EU';
     }
 
 
