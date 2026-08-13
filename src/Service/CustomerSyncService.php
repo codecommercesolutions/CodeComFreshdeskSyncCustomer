@@ -456,6 +456,11 @@ class CustomerSyncService
 
     private function determineRegionalWebshopTag(CustomerEntity $customer, string $salesChannelId): string
     {
+        $configTag = trim($this->systemConfigService->getString('CodeComFreshdeskSyncCustomer.config.contactTag', $salesChannelId));
+        if ($configTag !== '' && strtolower($configTag) !== 'webshop') {
+            return $configTag;
+        }
+
         $address = $customer->getDefaultBillingAddress();
         $country = $address?->getCountry();
 
