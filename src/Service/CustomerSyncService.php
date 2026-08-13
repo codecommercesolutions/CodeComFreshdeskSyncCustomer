@@ -456,21 +456,24 @@ class CustomerSyncService
 
     private function determineRegionalWebshopTag(CustomerEntity $customer, string $salesChannelId): string
     {
+        $configTag = trim($this->systemConfigService->getString('CodeComFreshdeskSyncCustomer.config.contactTag', $salesChannelId));
+        $chTag = ($configTag !== '' && strtolower($configTag) !== 'webshop') ? $configTag : 'Webshop-CH';
+
         $address = $customer->getDefaultBillingAddress();
         $country = $address?->getCountry();
 
-        // 1. Check Country first
+        // 1. Check if customer's country matches CH / configured CH countries
         if ($country !== null) {
             $configuredCountryIds = $this->systemConfigService->get('CodeComFreshdeskSyncCustomer.config.chWebshopCountries', $salesChannelId);
 
             if (is_array($configuredCountryIds) && $configuredCountryIds !== []) {
                 if (in_array($country->getId(), $configuredCountryIds, true)) {
-                    return 'Webshop-CH';
+                    return $chTag;
                 }
             } else {
                 $iso = strtoupper(trim((string) $country->getIso()));
                 if ($iso === 'CH' || $iso === 'LI') {
-                    return 'Webshop-CH';
+                    return $chTag;
                 }
 
                 $countryName = $country->getTranslated()['name']
@@ -490,19 +493,13 @@ class CustomerSyncService
 
                 foreach ($chLiKeywords as $keyword) {
                     if ($countryNameLower === $keyword || str_contains($countryNameLower, $keyword)) {
-                        return 'Webshop-CH';
+                        return $chTag;
                     }
                 }
             }
         }
 
-        // 2. Check SalesChannel configured Contact Tag second
-        $configTag = trim($this->systemConfigService->getString('CodeComFreshdeskSyncCustomer.config.contactTag', $salesChannelId));
-        if ($configTag !== '') {
-            return $configTag;
-        }
-
-        // 3. Fallback
+        // 2. All non-CH countries (or missing country) receive Webshop-EU
         return 'Webshop-EU';
     }
 
