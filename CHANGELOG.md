@@ -58,6 +58,9 @@
 # 3.3.4
 - Added configurable Countries for Webshop-CH Tag multiselect configuration setting (chWebshopCountries) in plugin administration settings with fallback to default Switzerland and Liechtenstein country matching.
 
+# 3.3.5
+- Renamed country multiselect setting label to "Assigned Countries for Contact Tag" to accurately reflect saleschannel-specific dynamic tag mapping.
+
 
 
 

@@ -58,6 +58,9 @@
 # 3.3.4
 - Konfigurierbare Mehrfachauswahl-Einstellung fuer Länder für Webshop-CH Tag (chWebshopCountries) in der Plugin-Administration hinzugefuegt, mit Fallback auf die Standardpruefung von Schweiz und Liechtenstein.
 
+# 3.3.5
+- Bezeichnung der Laender-Mehrfachauswahl in "Zugeordnete Länder für Kontakt-Tag" umbenannt, um die vertriebskanalspezifische dynamische Tag-Zuordnung korrekt widerzuspiegeln.
+
 
 
 
