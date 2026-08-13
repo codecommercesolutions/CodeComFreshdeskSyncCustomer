@@ -52,6 +52,9 @@
 # 3.3.2
 - Echtzeit-Zaehleraktualisierungen in der Schleife und dynamische Verbleibend-Berechnung implementiert.
 
+# 3.3.3
+- Dynamische laenderbasierte Freshdesk-Tag-Zuweisung hinzugefuegt: Rechnungsadressen aus der Schweiz (CH) und Liechtenstein (LI) erhalten das Tag "Webshop-CH", alle anderen Laender "Webshop-EU".
+
 
 
 

@@ -448,17 +448,48 @@ class CustomerSyncService
             }
         }
 
-        $configTag = trim($this->systemConfigService->getString('CodeComFreshdeskSyncCustomer.config.contactTag', $salesChannelId));
-        if ($configTag === '') {
-            $configTag = 'Webshop';
-        }
-
-        if ($configTag !== '') {
-            $tagNames[] = $configTag;
-        }
+        $regionalTag = $this->determineRegionalWebshopTag($customer);
+        $tagNames[] = $regionalTag;
 
         return array_values(array_unique($tagNames));
     }
+
+    private function determineRegionalWebshopTag(CustomerEntity $customer): string
+    {
+        $address = $customer->getDefaultBillingAddress();
+        $country = $address?->getCountry();
+
+        if ($country !== null) {
+            $iso = strtoupper(trim((string) $country->getIso()));
+            if ($iso === 'CH' || $iso === 'LI') {
+                return 'Webshop-CH';
+            }
+
+            $countryName = $country->getTranslated()['name']
+                ?? $country->getName()
+                ?? '';
+            $countryNameLower = mb_strtolower(trim((string) $countryName));
+
+            $chLiKeywords = [
+                'switzerland',
+                'schweiz',
+                'suisse',
+                'svizzera',
+                'switserland',
+                'liechtenstein',
+                'lichtenstein',
+            ];
+
+            foreach ($chLiKeywords as $keyword) {
+                if ($countryNameLower === $keyword || str_contains($countryNameLower, $keyword)) {
+                    return 'Webshop-CH';
+                }
+            }
+        }
+
+        return 'Webshop-EU';
+    }
+
 
 
     private function buildCustomerName(CustomerEntity $customer): ?string

@@ -52,6 +52,9 @@
 # 3.3.2
 - Implemented real-time in-loop configuration counter updates and dynamic database remaining count calculation during customer batch processing.
 
+# 3.3.3
+- Added dynamic country-based Freshdesk tag assignment: invoice addresses from Switzerland (CH) and Liechtenstein (LI) are tagged with "Webshop-CH", and all other countries with "Webshop-EU".
+
 
 
 
