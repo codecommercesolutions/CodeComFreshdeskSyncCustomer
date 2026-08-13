@@ -499,8 +499,8 @@ class CustomerSyncService
             }
         }
 
-        // 2. All non-CH countries (or missing country) receive Webshop-EU
-        return 'Webshop-EU';
+        // 2. All non-CH countries (or missing country) receive configured tag or fallback Webshop-EU
+        return $configTag !== '' ? $configTag : 'Webshop-EU';
     }
 
 
