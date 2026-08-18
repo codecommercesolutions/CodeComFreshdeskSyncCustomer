@@ -10,6 +10,7 @@
             <argument type="service" id="Shopware\Core\System\SystemConfig\SystemConfigService"/>
             <argument type="service" id="logger"/>
             <argument type="service" id="log_entry.repository"/>
+            <argument type="service" id="Symfony\Component\Mailer\MailerInterface" on-invalid="null"/>
         </service>
 
         <service id="CodeCom\FreshdeskSyncCustomer\Service\CustomerSyncService">
@@ -26,6 +27,7 @@
             <argument type="service" id="Shopware\Core\System\SystemConfig\SystemConfigService"/>
             <argument type="service" id="CodeCom\FreshdeskSyncCustomer\Service\CustomerSyncService"/>
             <argument type="service" id="logger" on-invalid="null"/>
+            <argument type="service" id="CodeCom\FreshdeskSyncCustomer\Service\FreshdeskService" on-invalid="null"/>
             <tag name="kernel.event_subscriber"/>
         </service>
 

@@ -71,6 +71,9 @@
 # 3.3.8
 - Updated DBAL query in findMatchingSalesChannelIdForCountry() to SELECT LOWER(HEX(sales_channel_id)) AS sales_channel_id, preventing invalid binary UUID validation errors when fetching sales channel configuration.
 
+# 3.3.9
+- Added configurable Error Email Notifications feature (enableErrorEmail and errorEmailAddress) to send real-time email alerts with full error stack traces whenever a Freshdesk API sync failure or exception occurs.
+
 
 
 

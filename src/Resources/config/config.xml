@@ -286,6 +286,28 @@
     </card>
 
     <card>
+        <title>Error Email Notifications</title>
+        <title lang="de-DE">Fehler-E-Mail-Benachrichtigungen</title>
+
+        <input-field type="bool">
+            <name>enableErrorEmail</name>
+            <label>Enable Error Email Notifications</label>
+            <label lang="de-DE">Fehler-E-Mail-Benachrichtigungen aktivieren</label>
+            <helpText>Sends an instant email notification to the specified address whenever a Freshdesk sync error occurs.</helpText>
+            <helpText lang="de-DE">Sendet eine sofortige E-Mail-Benachrichtigung an die angegebene Adresse, wenn ein Freshdesk-Synchronisierungsfehler auftritt.</helpText>
+            <defaultValue>false</defaultValue>
+        </input-field>
+
+        <input-field type="text">
+            <name>errorEmailAddress</name>
+            <label>Error Notification Recipient Email</label>
+            <label lang="de-DE">E-Mail-Empfänger für Fehlerbenachrichtigungen</label>
+            <helpText>Enter the email address(es) to receive Freshdesk API error reports. Separate multiple emails with a comma.</helpText>
+            <helpText lang="de-DE">Geben Sie die E-Mail-Adresse(n) ein, die Freshdesk-API-Fehlerberichte erhalten sollen. Trennen Sie mehrere E-Mails durch ein Komma.</helpText>
+        </input-field>
+    </card>
+
+    <card>
         <title>Reset Sync Status</title>
         <title lang="de-DE">Sync-Status zurücksetzen</title>
 

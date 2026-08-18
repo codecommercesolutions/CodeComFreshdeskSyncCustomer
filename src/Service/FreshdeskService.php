@@ -7,6 +7,8 @@ namespace CodeCom\FreshdeskSyncCustomer\Service;
 use Shopware\Core\Framework\Context;
 use Shopware\Core\Framework\DataAbstractionLayer\EntityRepository;
 use Shopware\Core\System\SystemConfig\SystemConfigService;
+use Symfony\Component\Mailer\MailerInterface;
+use Symfony\Component\Mime\Email;
 use Symfony\Contracts\HttpClient\HttpClientInterface;
 use Symfony\Contracts\HttpClient\Exception\HttpExceptionInterface;
 use Symfony\Contracts\HttpClient\ResponseInterface;
@@ -17,7 +19,8 @@ class FreshdeskService
         private readonly HttpClientInterface $httpClient,
         private readonly SystemConfigService $systemConfigService,
         private readonly \Psr\Log\LoggerInterface $logger,
-        private readonly EntityRepository $logEntryRepository
+        private readonly EntityRepository $logEntryRepository,
+        private readonly ?MailerInterface $mailer = null
     ) {
     }
 
@@ -150,7 +153,10 @@ class FreshdeskService
                 return ['success' => true];
             }
 
-            return ['success' => false, 'message' => 'Update contact failed: HTTP ' . $statusCode . ' | ' . json_encode($responseBody)];
+            $errMsg = 'Update contact failed: HTTP ' . $statusCode . ' | ' . json_encode($responseBody);
+            $this->sendErrorEmailNotification('Update Contact Failed (HTTP ' . $statusCode . ')', "Contact ID: {$contactId}\nURL: {$url}\nStatus: {$statusCode}\nResponse: " . json_encode($responseBody, JSON_PRETTY_PRINT), $salesChannelId);
+
+            return ['success' => false, 'message' => $errMsg];
         } catch (\Exception $e) {
             $message = $e->getMessage();
             if ($e instanceof HttpExceptionInterface) {
@@ -159,6 +165,8 @@ class FreshdeskService
                 } catch (\Exception $e) {}
             }
             $this->log('updateFreshdeskContact() EXCEPTION | ' . $message);
+            $this->sendErrorEmailNotification('Update Contact Exception', "Contact ID: {$contactId}\nMessage: {$message}\nTrace:\n" . $e->getTraceAsString(), $salesChannelId);
+
             return ['success' => false, 'message' => $e->getMessage()];
         }
     }
@@ -398,9 +406,12 @@ class FreshdeskService
                 ];
             }
 
+            $errMsg = 'Failed to create contact: ' . json_encode($responseData);
+            $this->sendErrorEmailNotification('Create Contact Failed (HTTP ' . $statusCode . ')', "Email: {$email}\nURL: {$url}\nHTTP Status: {$statusCode}\nResponse: " . json_encode($responseData, JSON_PRETTY_PRINT), $salesChannelId);
+
             return [
                 'success' => false,
-                'message' => 'Failed to create contact: ' . json_encode($responseData),
+                'message' => $errMsg,
             ];
         } catch (\Exception $e) {
             $message = $e->getMessage();
@@ -410,7 +421,62 @@ class FreshdeskService
                 } catch (\Exception $e) {}
             }
             $this->log('createOrUpdateRegistrationContact() EXCEPTION | ' . $message);
+            $this->sendErrorEmailNotification('Create Contact Exception', "Email: {$email}\nMessage: {$message}\nTrace:\n" . $e->getTraceAsString(), $salesChannelId);
+
             return ['success' => false, 'message' => $e->getMessage()];
+        }
+    }
+
+    public function sendErrorEmailNotification(string $subject, string $details, ?string $salesChannelId = null): void
+    {
+        try {
+            if (!$this->systemConfigService->getBool('CodeComFreshdeskSyncCustomer.config.enableErrorEmail', $salesChannelId)) {
+                return;
+            }
+
+            $recipientString = trim((string) $this->systemConfigService->get('CodeComFreshdeskSyncCustomer.config.errorEmailAddress', $salesChannelId));
+            if ($recipientString === '') {
+                return;
+            }
+
+            $recipients = array_filter(array_map('trim', explode(',', $recipientString)));
+            if (empty($recipients)) {
+                return;
+            }
+
+            $formattedSubject = '[Freshdesk Sync Error] ' . $subject;
+            $htmlContent = '
+                <div style="font-family: Arial, sans-serif; padding: 20px; border: 1px solid #e0e0e0; border-radius: 8px; max-width: 650px; margin: 0 auto;">
+                    <h2 style="color: #d9534f; margin-top: 0;">Freshdesk Customer Sync Error Alert</h2>
+                    <p>An unexpected error occurred during Freshdesk customer data synchronization.</p>
+                    <hr style="border: 0; border-top: 1px solid #eee; margin: 15px 0;">
+                    <h4 style="margin-bottom: 5px;">Error Details:</h4>
+                    <pre style="background: #f8f9fa; padding: 15px; border-left: 4px solid #d9534f; font-family: monospace; white-space: pre-wrap; word-break: break-word;">' . htmlspecialchars($details) . '</pre>
+                    <hr style="border: 0; border-top: 1px solid #eee; margin: 15px 0;">
+                    <p style="font-size: 12px; color: #777;">Timestamp: ' . date('Y-m-d H:i:s T') . '</p>
+                </div>
+            ';
+
+            foreach ($recipients as $toEmail) {
+                if (!filter_var($toEmail, FILTER_VALIDATE_EMAIL)) {
+                    continue;
+                }
+
+                if ($this->mailer !== null) {
+                    $emailObj = (new Email())
+                        ->to($toEmail)
+                        ->subject($formattedSubject)
+                        ->html($htmlContent);
+
+                    $this->mailer->send($emailObj);
+                } else {
+                    $headers = "MIME-Version: 1.0\r\n";
+                    $headers .= "Content-Type: text/html; charset=UTF-8\r\n";
+                    @mail($toEmail, $formattedSubject, $htmlContent, $headers);
+                }
+            }
+        } catch (\Throwable $e) {
+            $this->logger->error('Failed sending error notification email: ' . $e->getMessage());
         }
     }
 

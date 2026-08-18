@@ -71,6 +71,9 @@
 # 3.3.8
 - DBAL-Abfrage in findMatchingSalesChannelIdForCountry() auf SELECT LOWER(HEX(sales_channel_id)) AS sales_channel_id aktualisiert, um ungueltige binaere UUID-Validierungsfehler beim Abrufen der Vertriebskanalkonfiguration zu verhindern.
 
+# 3.3.9
+- Konfigurierbare Fehler-E-Mail-Benachrichtigungsfunktion (enableErrorEmail und errorEmailAddress) hinzugefuegt, um Echtzeit-E-Mail-Benachrichtigungen mit vollstaendigen Fehler-Stack-Traces zu senden, wenn ein Freshdesk-API-Synchronisierungsfehler oder eine Ausnahme auftritt.
+
 
 
 

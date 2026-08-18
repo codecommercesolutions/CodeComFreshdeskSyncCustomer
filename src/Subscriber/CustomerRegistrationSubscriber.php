@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace CodeCom\FreshdeskSyncCustomer\Subscriber;
 
 use CodeCom\FreshdeskSyncCustomer\Service\CustomerSyncService;
+use CodeCom\FreshdeskSyncCustomer\Service\FreshdeskService;
 use Psr\Log\LoggerInterface;
 use Shopware\Core\Checkout\Customer\CustomerEvents;
 use Shopware\Core\Checkout\Customer\Event\CustomerDoubleOptInRegistrationEvent;
@@ -23,7 +24,8 @@ class CustomerRegistrationSubscriber implements EventSubscriberInterface
     public function __construct(
         private readonly SystemConfigService $systemConfigService,
         private readonly CustomerSyncService $customerSyncService,
-        private readonly ?LoggerInterface $logger = null
+        private readonly ?LoggerInterface $logger = null,
+        private readonly ?FreshdeskService $freshdeskService = null
     ) {
     }
 
@@ -72,6 +74,11 @@ class CustomerRegistrationSubscriber implements EventSubscriberInterface
                 'exception' => $e,
                 'customerId' => $event->getCustomer()->getId(),
             ]);
+            $this->freshdeskService?->sendErrorEmailNotification(
+                'Registration Sync Exception',
+                "Customer ID: {$event->getCustomer()->getId()}\nEmail: {$event->getCustomer()->getEmail()}\nMessage: {$e->getMessage()}\nTrace:\n" . $e->getTraceAsString(),
+                $event->getSalesChannelId()
+            );
         }
     }
 
@@ -89,6 +96,11 @@ class CustomerRegistrationSubscriber implements EventSubscriberInterface
                 'exception' => $e,
                 'customerId' => $event->getCustomer()->getId(),
             ]);
+            $this->freshdeskService?->sendErrorEmailNotification(
+                'Double Opt-In Sync Exception',
+                "Customer ID: {$event->getCustomer()->getId()}\nEmail: {$event->getCustomer()->getEmail()}\nMessage: {$e->getMessage()}\nTrace:\n" . $e->getTraceAsString(),
+                $event->getSalesChannelId()
+            );
         }
     }
 }
