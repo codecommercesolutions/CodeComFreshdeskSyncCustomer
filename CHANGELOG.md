@@ -68,6 +68,9 @@
 # 3.3.7
 - Added minimum 5-character phone number length check in FreshdeskService to omit short phone numbers and prevent Freshdesk API HTTP 400 validation errors.
 
+# 3.3.8
+- Updated DBAL query in findMatchingSalesChannelIdForCountry() to SELECT LOWER(HEX(sales_channel_id)) AS sales_channel_id, preventing invalid binary UUID validation errors when fetching sales channel configuration.
+
 
 
 

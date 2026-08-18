@@ -68,6 +68,9 @@
 # 3.3.7
 - Pruefung auf eine Mindestlaenge von 5 Zeichen fuer Telefonnummern in FreshdeskService hinzugefuegt, um zu kurze Telefonnummern auszulassen und HTTP 400-Validierungsfehler der Freshdesk-API zu vermeiden.
 
+# 3.3.8
+- DBAL-Abfrage in findMatchingSalesChannelIdForCountry() auf SELECT LOWER(HEX(sales_channel_id)) AS sales_channel_id aktualisiert, um ungueltige binaere UUID-Validierungsfehler beim Abrufen der Vertriebskanalkonfiguration zu verhindern.
+
 
 
 

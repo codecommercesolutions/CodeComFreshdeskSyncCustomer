@@ -522,7 +522,7 @@ class CustomerSyncService
 
         try {
             $rows = $this->connection->fetchAllAssociative("
-                SELECT `sales_channel_id`, `configuration_value`
+                SELECT LOWER(HEX(`sales_channel_id`)) AS `sales_channel_id`, `configuration_value`
                 FROM `system_config`
                 WHERE `configuration_key` = 'CodeComFreshdeskSyncCustomer.config.chWebshopCountries'
             ");
@@ -539,7 +539,8 @@ class CustomerSyncService
                     : (is_array($decoded) ? $decoded : []);
 
                 if (in_array($countryId, $countryIds, true)) {
-                    return $row['sales_channel_id'] !== null ? (string) $row['sales_channel_id'] : null;
+                    $scId = $row['sales_channel_id'] ?? null;
+                    return is_string($scId) && $scId !== '' ? $scId : null;
                 }
             }
         } catch (\Throwable $e) {
