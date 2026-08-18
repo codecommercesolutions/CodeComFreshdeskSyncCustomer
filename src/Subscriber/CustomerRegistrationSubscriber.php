@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace CodeCom\FreshdeskSyncCustomer\Subscriber;
 
 use CodeCom\FreshdeskSyncCustomer\Service\CustomerSyncService;
+use Psr\Log\LoggerInterface;
 use Shopware\Core\Checkout\Customer\CustomerEvents;
 use Shopware\Core\Checkout\Customer\Event\CustomerDoubleOptInRegistrationEvent;
 use Shopware\Core\Checkout\Customer\Event\CustomerRegisterEvent;
@@ -21,7 +22,8 @@ class CustomerRegistrationSubscriber implements EventSubscriberInterface
 
     public function __construct(
         private readonly SystemConfigService $systemConfigService,
-        private readonly CustomerSyncService $customerSyncService
+        private readonly CustomerSyncService $customerSyncService,
+        private readonly ?LoggerInterface $logger = null
     ) {
     }
 
@@ -57,22 +59,36 @@ class CustomerRegistrationSubscriber implements EventSubscriberInterface
 
     public function onCustomerRegister(CustomerRegisterEvent|GuestCustomerRegisterEvent $event): void
     {
-        $salesChannelId = $event->getSalesChannelId();
+        try {
+            $salesChannelId = $event->getSalesChannelId();
 
-        if (!$this->systemConfigService->getBool('CodeComFreshdeskSyncCustomer.config.enabled', $salesChannelId)) {
-            return;
+            if (!$this->systemConfigService->getBool('CodeComFreshdeskSyncCustomer.config.enabled', $salesChannelId)) {
+                return;
+            }
+
+            $this->customerSyncService->syncCustomer($event->getCustomer(), $event->getContext());
+        } catch (\Throwable $e) {
+            $this->logger?->error('Freshdesk customer registration sync error: ' . $e->getMessage(), [
+                'exception' => $e,
+                'customerId' => $event->getCustomer()->getId(),
+            ]);
         }
-
-        $this->customerSyncService->syncCustomer($event->getCustomer(), $event->getContext());
     }
 
     public function onCustomerDoubleOptInRegistration(CustomerDoubleOptInRegistrationEvent $event): void
     {
-        $salesChannelId = $event->getSalesChannelId();
-        if (!$this->systemConfigService->getBool('CodeComFreshdeskSyncCustomer.config.enabled', $salesChannelId)) {
-            return;
-        }
+        try {
+            $salesChannelId = $event->getSalesChannelId();
+            if (!$this->systemConfigService->getBool('CodeComFreshdeskSyncCustomer.config.enabled', $salesChannelId)) {
+                return;
+            }
 
-        $this->customerSyncService->syncCustomer($event->getCustomer(), $event->getContext());
+            $this->customerSyncService->syncCustomer($event->getCustomer(), $event->getContext());
+        } catch (\Throwable $e) {
+            $this->logger?->error('Freshdesk double opt-in customer sync error: ' . $e->getMessage(), [
+                'exception' => $e,
+                'customerId' => $event->getCustomer()->getId(),
+            ]);
+        }
     }
 }

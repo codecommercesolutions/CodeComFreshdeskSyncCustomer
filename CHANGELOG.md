@@ -61,6 +61,10 @@
 # 3.3.5
 - Renamed country multiselect setting label to "Assigned Countries for Contact Tag" to accurately reflect saleschannel-specific dynamic tag mapping.
 
+# 3.3.6
+- Wrapped customer registration and double opt-in event handlers in try-catch blocks to prevent storefront registration and guest checkout crashes if Freshdesk API calls encounter exceptions or timeouts.
+- Added explicit handles attribute in services.xml and getHandledMessages() method in FreshdeskCustomerSyncTaskHandler to resolve Symfony Messenger NoHandlerForMessageException errors for scheduled tasks.
+
 
 
 

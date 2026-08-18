@@ -25,6 +25,7 @@
         <service id="CodeCom\FreshdeskSyncCustomer\Subscriber\CustomerRegistrationSubscriber">
             <argument type="service" id="Shopware\Core\System\SystemConfig\SystemConfigService"/>
             <argument type="service" id="CodeCom\FreshdeskSyncCustomer\Service\CustomerSyncService"/>
+            <argument type="service" id="logger" on-invalid="null"/>
             <tag name="kernel.event_subscriber"/>
         </service>
 
@@ -47,7 +48,7 @@
             <argument type="service" id="logger"/>
             <argument type="service" id="CodeCom\FreshdeskSyncCustomer\Service\CustomerSyncService"/>
             <argument type="service" id="Shopware\Core\System\SystemConfig\SystemConfigService"/>
-            <tag name="messenger.message_handler"/>
+            <tag name="messenger.message_handler" handles="CodeCom\FreshdeskSyncCustomer\Schedule\FreshdeskCustomerSyncTask"/>
         </service>
 
         <service id="CodeCom\FreshdeskSyncCustomer\Core\Api\FreshdeskCustomerSyncController" public="true">

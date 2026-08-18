@@ -24,6 +24,11 @@ class FreshdeskCustomerSyncTaskHandler extends ScheduledTaskHandler
         parent::__construct($scheduledTaskRepository, $logger);
     }
 
+    public static function getHandledMessages(): iterable
+    {
+        return [FreshdeskCustomerSyncTask::class];
+    }
+
     public function run(): void
     {
         if (!$this->systemConfigService->getBool('CodeComFreshdeskSyncCustomer.config.enableAutomaticCustomerSync')) {

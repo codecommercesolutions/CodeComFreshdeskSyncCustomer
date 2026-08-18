@@ -61,6 +61,10 @@
 # 3.3.5
 - Bezeichnung der Laender-Mehrfachauswahl in "Zugeordnete Länder für Kontakt-Tag" umbenannt, um die vertriebskanalspezifische dynamische Tag-Zuordnung korrekt widerzuspiegeln.
 
+# 3.3.6
+- Event-Handler fuer Kundenregistrierung und Double-Opt-in in Try-Catch-Bloecke eingeschlossen, um Abstuerze bei Registrierung und Gast-Checkout im Storefront bei Freshdesk-API-Ausnahmen zu verhindern.
+- Explizites handles-Attribut in services.xml und getHandledMessages()-Methode in FreshdeskCustomerSyncTaskHandler hinzugefuegt, um NoHandlerForMessageException-Fehler im Symfony Messenger fuer geplante Tasks zu beheben.
+
 
 
 
