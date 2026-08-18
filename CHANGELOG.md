@@ -65,6 +65,9 @@
 - Wrapped customer registration and double opt-in event handlers in try-catch blocks to prevent storefront registration and guest checkout crashes if Freshdesk API calls encounter exceptions or timeouts.
 - Added explicit handles attribute in services.xml and getHandledMessages() method in FreshdeskCustomerSyncTaskHandler to resolve Symfony Messenger NoHandlerForMessageException errors for scheduled tasks.
 
+# 3.3.7
+- Added minimum 5-character phone number length check in FreshdeskService to omit short phone numbers and prevent Freshdesk API HTTP 400 validation errors.
+
 
 
 

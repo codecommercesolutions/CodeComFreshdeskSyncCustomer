@@ -217,6 +217,11 @@ class FreshdeskService
             return ['success' => false, 'message' => 'Email is required'];
         }
 
+        $phone = trim((string) $phone);
+        if (strlen($phone) < 5) {
+            $phone = null;
+        }
+
         $tags = $this->normalizeContactTags($contactTags);
         if ($tags === []) {
             $fallbackTag = $this->systemConfigService->getString('CodeComFreshdeskSyncCustomer.config.contactTag', $salesChannelId);

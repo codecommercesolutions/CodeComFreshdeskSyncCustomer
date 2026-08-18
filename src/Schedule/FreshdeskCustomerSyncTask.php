@@ -10,7 +10,7 @@ class FreshdeskCustomerSyncTask extends ScheduledTask
 {
     public static function getTaskName(): string
     {
-        return 'codecom.freshdesk.customer_sync';
+            return 'codecom.freshdesk.customer_sync';
     }
 
     public static function getDefaultInterval(): int
