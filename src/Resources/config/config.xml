@@ -302,6 +302,7 @@
             <name>errorEmailAddress</name>
             <label>Error Notification Recipient Email</label>
             <label lang="de-DE">E-Mail-Empfänger für Fehlerbenachrichtigungen</label>
+            <placeholder>admin@example.com</placeholder>
             <helpText>Enter the email address(es) to receive Freshdesk API error reports. Separate multiple emails with a comma.</helpText>
             <helpText lang="de-DE">Geben Sie die E-Mail-Adresse(n) ein, die Freshdesk-API-Fehlerberichte erhalten sollen. Trennen Sie mehrere E-Mails durch ein Komma.</helpText>
         </input-field>
